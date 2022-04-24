@@ -30,7 +30,7 @@ public class WorkTrackerTest {
 
         assertThat(timeLog.getEntries()).hasSize(1);
 
-        TimeEntry entry = timeLog.getEntries().get(0);
+        TimeInterval entry = timeLog.getEntries().get(0);
         assertThat(entry.getFrom()).isEqualTo(startTime);
         assertThat(entry.getTo()).isEqualTo(startTime.plus(Duration.ofMinutes(1)));
     }

@@ -5,14 +5,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TestTimeLog implements TimeLog {
-    private List<TimeEntry> entries = new ArrayList<>();
+    private List<TimeInterval> entries = new ArrayList<>();
 
     @Override
     public void log(Instant from, Instant to) {
-        entries.add(new TimeEntry(from, to));
+        entries.add(new TimeInterval(from, to));
     }
 
-    public List<TimeEntry> getEntries() {
+    public List<TimeInterval> getEntries() {
         return entries;
     }
 

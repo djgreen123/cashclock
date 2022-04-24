@@ -7,27 +7,27 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class InMemoryTimeLog {
-    private List<TimeEntry> entries = new ArrayList<>();
+    private List<TimeInterval> entries = new ArrayList<>();
 
     public void add(Instant start, Instant end) {
-        entries.add(new TimeEntry(start, end));
+        entries.add(new TimeInterval(start, end));
     }
 
     public Duration getTotalTime(Instant from, Instant to) {
-        List<TimeEntry> clippedEntries = entries.stream().map(e -> clip(e, from, to)).collect(Collectors.toList());
+        List<TimeInterval> clippedEntries = entries.stream().map(e -> clip(e, from, to)).collect(Collectors.toList());
         return sumOf(clippedEntries);
     }
 
-    private Duration sumOf(List<TimeEntry> entries) {
+    private Duration sumOf(List<TimeInterval> entries) {
         Duration total = Duration.ZERO;
-        for (TimeEntry entry : entries) {
+        for (TimeInterval entry : entries) {
             total = total.plus(entry.getDuration());
         }
         return total;
     }
 
-    private TimeEntry clip(TimeEntry entry, Instant from, Instant to) {
-        return new TimeEntry(laterOf(from, entry.getFrom()), earlierOf(to, entry.getTo()));
+    private TimeInterval clip(TimeInterval timeInterval, Instant from, Instant to) {
+        return new TimeInterval(laterOf(from, timeInterval.getFrom()), earlierOf(to, timeInterval.getTo()));
     }
 
     private Instant laterOf(Instant i1, Instant i2) {

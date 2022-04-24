@@ -3,11 +3,11 @@ package com.dgreenproductions.cashclock;
 import java.time.Duration;
 import java.time.Instant;
 
-public class TimeEntry {
+public class TimeInterval {
     private final Instant from;
     private final Instant to;
 
-    public TimeEntry(Instant from, Instant to) {
+    public TimeInterval(Instant from, Instant to) {
         this.from = from;
         this.to = to;
     }

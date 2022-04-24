@@ -15,7 +15,7 @@ import java.util.List;
 public class FileBasedTimeLog implements TimeLog {
 
     private Path logFilePath;
-    private List<TimeEntry> entries = new ArrayList<>();
+    private List<TimeInterval> entries = new ArrayList<>();
     private DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME.withZone(ZoneId.from(ZoneOffset.UTC));
 
     public FileBasedTimeLog(String logFilePathString) {
@@ -39,8 +39,8 @@ public class FileBasedTimeLog implements TimeLog {
             String fromText = formatter.format(fromTruncedToSeconds);
             String toText = formatter.format(toTruncedToSeconds);
 
-            TimeEntry newEntry = new TimeEntry(fromTruncedToSeconds, toTruncedToSeconds);
-            entries.add(newEntry);
+            TimeInterval interval = new TimeInterval(fromTruncedToSeconds, toTruncedToSeconds);
+            entries.add(interval);
 
             FileUtils.writeLines(logFilePath.toFile(), List.of(fromText + ", " + toText), true);
         } catch (IOException e) {
@@ -48,7 +48,7 @@ public class FileBasedTimeLog implements TimeLog {
         }
     }
 
-    public List<TimeEntry> getEntries() {
+    public List<TimeInterval> getEntries() {
         return List.copyOf(entries);
     }
 
@@ -58,7 +58,7 @@ public class FileBasedTimeLog implements TimeLog {
             for (String logLine : logLines) {
                 if (!logLine.isBlank()) {
                     String[] parts = logLine.split(", ");
-                    entries.add(new TimeEntry(parseInstant(parts[0]), parseInstant(parts[1])));
+                    entries.add(new TimeInterval(parseInstant(parts[0]), parseInstant(parts[1])));
                 }
             }
         } catch (IOException e) {

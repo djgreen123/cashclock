@@ -50,7 +50,7 @@ public class FileBasedTimeLogTest {
     }
 
     @Test
-    public void canLogEntry() throws IOException {
+    public void canLogInterval() throws IOException {
         Instant from = Instant.now();
         Instant to = from.plus(Duration.ofMinutes(1));
         timeLog.log(from, to);
