@@ -21,7 +21,7 @@ import static org.fest.assertions.Assertions.assertThat;
 public class FileBasedTimeLogTest {
 
     private Path logFilePath;
-    private TimeLog timeLog;
+    private FileBasedTimeLog timeLog;
 
     @BeforeEach
     public void beforeEach() throws IOException {
@@ -32,6 +32,21 @@ public class FileBasedTimeLogTest {
     @AfterEach
     public void afterEach() {
         logFilePath.toFile().delete();
+    }
+
+    @Test
+    public void hasInMemoryListOfEntries() {
+        timeLog.log(Instant.now(), Instant.now().plus(Duration.ofSeconds(1)));
+        assertThat(timeLog.getEntries()).hasSize(1);
+    }
+
+    @Test
+    public void entriesOnDiskAreLoadedOnConstruction() {
+        TimeLog timeLog1 = new FileBasedTimeLog(logFilePath);
+        timeLog1.log(Instant.now(), Instant.now().plus(Duration.ofMinutes(1)));
+
+        FileBasedTimeLog timeLog2 = new FileBasedTimeLog(logFilePath);
+        assertThat(timeLog2.getEntries()).hasSize(1);
     }
 
     @Test

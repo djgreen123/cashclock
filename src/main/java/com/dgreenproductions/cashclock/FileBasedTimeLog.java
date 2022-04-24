@@ -9,14 +9,22 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 
 public class FileBasedTimeLog implements TimeLog {
 
     private Path logFilePath;
+    private List<TimeEntry> entries = new ArrayList<>();
+    private DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME.withZone(ZoneId.from(ZoneOffset.UTC));
+
+    public FileBasedTimeLog(String logFilePathString) {
+        this(Path.of(logFilePathString));
+    }
 
     public FileBasedTimeLog(Path logFilePath) {
         this.logFilePath = logFilePath;
+        loadEntries();
     }
 
     @Override
@@ -28,13 +36,38 @@ public class FileBasedTimeLog implements TimeLog {
             throw new IllegalArgumentException("illegal time log entry");
         }
         try {
-            DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME.withZone(ZoneId.from(ZoneOffset.UTC));
             String fromText = formatter.format(fromTruncedToSeconds);
             String toText = formatter.format(toTruncedToSeconds);
+
+            TimeEntry newEntry = new TimeEntry(fromTruncedToSeconds, toTruncedToSeconds);
+            entries.add(newEntry);
 
             FileUtils.writeLines(logFilePath.toFile(), List.of(fromText + ", " + toText), true);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
+    public List<TimeEntry> getEntries() {
+        return List.copyOf(entries);
+    }
+
+    private void loadEntries() {
+        try {
+            List<String> logLines = FileUtils.readLines(logFilePath.toFile(), "UTF-8");
+            for (String logLine : logLines) {
+                if (!logLine.isBlank()) {
+                    String[] parts = logLine.split(", ");
+                    entries.add(new TimeEntry(parseInstant(parts[0]), parseInstant(parts[1])));
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private Instant parseInstant(String text) {
+        return Instant.from(formatter.parse(text.trim()));
+    }
+
 }

@@ -8,6 +8,7 @@ public class WorkTracker {
     private Timeline timeline;
     private TimeLog timeLog;
     private Optional<Instant> from = Optional.empty();
+    private boolean clockedIn = false;
 
     public WorkTracker(Timeline timeline, TimeLog timeLog) {
         this.timeline = timeline;
@@ -15,6 +16,8 @@ public class WorkTracker {
     }
 
     public void clockIn() {
+        if (clockedIn) return;
+        clockedIn = true;
         scheduledNextLogEntry(timeline.getCurrentTime());
     }
 
@@ -30,11 +33,17 @@ public class WorkTracker {
     }
 
     public void clockOut() {
+        if (!clockedIn) return;
         if (from.isPresent() && Duration.between(from.get(), timeline.getCurrentTime()).getSeconds() > 1) {
             timeLog.log(from.get(), timeline.getCurrentTime());
             from = Optional.empty();
         }
         timeline.cancelFutureActions();
+        clockedIn = false;
+    }
+
+    public boolean isClockedIn() {
+        return clockedIn;
     }
 }
 
