@@ -1,5 +1,6 @@
 package com.dgreenproductions.cashclock;
 
+import java.time.Duration;
 import java.time.Instant;
 
 public class TimeEntry {
@@ -7,7 +8,6 @@ public class TimeEntry {
     private final Instant to;
 
     public TimeEntry(Instant from, Instant to) {
-
         this.from = from;
         this.to = to;
     }
@@ -19,4 +19,6 @@ public class TimeEntry {
     public Instant getTo() {
         return to;
     }
+
+    public Duration getDuration() { return Duration.between(from, to); }
 }
