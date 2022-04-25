@@ -15,7 +15,11 @@ import java.util.List;
 public class FileBasedTimeLog implements TimeLog {
 
     private Path logFilePath;
+
+    // TODO This belongs with the in memory time log
     private List<TimeInterval> entries = new ArrayList<>();
+
+    // TODO Perhaps the formatter needs to be extracted?
     private DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME.withZone(ZoneId.from(ZoneOffset.UTC));
 
     public FileBasedTimeLog(String logFilePathString) {
@@ -29,6 +33,7 @@ public class FileBasedTimeLog implements TimeLog {
 
     @Override
     public void log(Instant from, Instant to) {
+        // TODO These rules belong in the TimeLog main
         Instant fromTruncedToSeconds = from.truncatedTo(ChronoUnit.SECONDS);
         Instant toTruncedToSeconds = to.truncatedTo(ChronoUnit.SECONDS);
 

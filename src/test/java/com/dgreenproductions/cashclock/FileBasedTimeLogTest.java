@@ -67,32 +67,6 @@ public class FileBasedTimeLogTest {
     }
 
     @Test
-    public void cannotLogZeroDuration() {
-        Instant instant = Instant.now();
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            timeLog.log(instant, instant);
-        });
-    }
-
-    @Test
-    public void cannotLogSubSecondDuration() {
-        Instant from = Instant.now().truncatedTo(ChronoUnit.SECONDS);
-        Instant to = from.plus(Duration.ofMillis(999));
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            timeLog.log(from, to);
-        });
-    }
-
-    @Test
-    public void logTruncatesToSeconds() throws IOException {
-        Instant from = Instant.parse("2018-05-12T20:59:59.123Z");
-        Instant to = Instant.parse("2018-05-12T21:00:58.456Z");
-        timeLog.log(from, to);
-        List<String> logLines = Files.readAllLines(logFilePath);
-        assertThat(logLines.get(0)).isEqualTo("2018-05-12T20:59:59Z, 2018-05-12T21:00:58Z");
-    }
-
-    @Test
     public void canLogTwoEntries() throws IOException {
         timeLog.log(Instant.now(), Instant.now().plus(Duration.ofSeconds(1)));
         timeLog.log(Instant.now(), Instant.now().plus(Duration.ofSeconds(1)));

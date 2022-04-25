@@ -7,10 +7,18 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class InMemoryTimeLog {
-    private List<TimeInterval> entries = new ArrayList<>();
+    private List<TimeInterval> entries;
 
-    public void add(Instant start, Instant end) {
-        entries.add(new TimeInterval(start, end));
+    public InMemoryTimeLog(List<TimeInterval> entries) {
+        this.entries = new ArrayList<>(entries);
+    }
+
+    public void add(Instant from, Instant to) {
+        if (!from.isBefore(to)) {
+            throw new IllegalArgumentException("illegal time log entry");
+        }
+
+        entries.add(new TimeInterval(from, to));
     }
 
     public Duration getTotalTime(Instant from, Instant to) {
