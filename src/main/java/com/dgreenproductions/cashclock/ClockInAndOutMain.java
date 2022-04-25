@@ -1,5 +1,6 @@
 package com.dgreenproductions.cashclock;
 
+import java.nio.file.Path;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.Scanner;
@@ -10,8 +11,11 @@ import java.util.concurrent.TimeUnit;
 public class ClockInAndOutMain {
 
     public static void main(String[] args) {
-        FileBasedTimeLog timeLog = new FileBasedTimeLog("/Users/duncangreen/WarehouseDocuments/By Company/Sky/timelog.txt");
+        Path path = Path.of("/Users/duncangreen/WarehouseDocuments/By Company/Sky/timelog.txt");
+        LogFileReader reader = new LogFileReader(path);
+        LogFileWriter writer = new LogFileWriter(path);
         Timeline timeline = new Timeline(Instant.now());
+        TimeLog timeLog = new InMemoryTimeLog(reader.readEntries(), (from, to) -> writer.writeEntry(from, to));
         WorkTracker workTracker = new WorkTracker(timeline, timeLog);
 
         Runnable runnable = () -> timeline.advanceBySeconds(1);

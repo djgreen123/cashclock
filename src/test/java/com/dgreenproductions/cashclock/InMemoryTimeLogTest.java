@@ -17,14 +17,16 @@ public class InMemoryTimeLogTest {
 
     @BeforeEach
     public void beforeEach() {
-        timeLog = new InMemoryTimeLog(new ArrayList<>());
+        timeLog = new InMemoryTimeLog(new ArrayList<>(), (from, to) -> {
+
+        });
     }
 
     @Test
     public void canGetTotalTimeOfSingleLogEntry() {
         Instant start = Instant.parse("2018-05-12T20:59:59.000Z");
         Instant end = start.plus(Duration.ofMinutes(1));
-        timeLog.add(start, end);
+        timeLog.log(start, end);
         assertThat(timeLog.getTotalTime(start, end)).isEqualTo(Duration.ofMinutes(1));
     }
 
@@ -32,7 +34,7 @@ public class InMemoryTimeLogTest {
     public void canGetTotalTimeWhenWindowIsWiderThanSingleEntry() {
         Instant start = Instant.now();
         Instant end = start.plus(Duration.ofMinutes(1));
-        timeLog.add(start, end);
+        timeLog.log(start, end);
         assertThat(timeLog.getTotalTime(start.minus(Duration.ofSeconds(1)), end.plus(Duration.ofSeconds(1)))).isEqualTo(Duration.ofMinutes(1));
     }
 
@@ -40,15 +42,15 @@ public class InMemoryTimeLogTest {
     public void canGetTotalTimeWhenWindowIsNarrowerThanSingleEntry() {
         Instant start = Instant.now();
         Instant end = start.plus(Duration.ofMinutes(1));
-        timeLog.add(start, end);
+        timeLog.log(start, end);
         assertThat(timeLog.getTotalTime(start.plus(Duration.ofSeconds(1)), end.minus(Duration.ofSeconds(1)))).isEqualTo(Duration.ofSeconds(58));
     }
 
     @Test
     public void canGetTotalOfMultipleEntries() {
         Instant start = Instant.parse("2018-05-12T20:59:59.000Z");
-        timeLog.add(start, start.plus(Duration.ofSeconds(20)));
-        timeLog.add(start.plus(Duration.ofSeconds(30)), start.plus(Duration.ofSeconds(34)));
+        timeLog.log(start, start.plus(Duration.ofSeconds(20)));
+        timeLog.log(start.plus(Duration.ofSeconds(30)), start.plus(Duration.ofSeconds(34)));
         assertThat(timeLog.getTotalTime(start, start.plus(Duration.ofSeconds(34)))).isEqualTo(Duration.ofSeconds(24));
     }
 
@@ -56,7 +58,7 @@ public class InMemoryTimeLogTest {
     public void cannotLogZeroDuration() {
         Instant instant = Instant.now();
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            timeLog.add(instant, instant);
+            timeLog.log(instant, instant);
         });
     }
 
@@ -65,7 +67,7 @@ public class InMemoryTimeLogTest {
         Instant from = Instant.now().truncatedTo(ChronoUnit.SECONDS);
         Instant to = from.plus(Duration.ofMillis(999));
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            timeLog.add(to, from);
+            timeLog.log(to, from);
         });
     }
 
@@ -73,7 +75,7 @@ public class InMemoryTimeLogTest {
     public void logHandlesMillioseconds() throws IOException {
         Instant from = Instant.parse("2018-05-12T20:59:59.123Z");
         Instant to = Instant.parse("2018-05-12T21:00:58.456Z");
-        timeLog.add(from, to);
+        timeLog.log(from, to);
         assertThat(timeLog.getTotalTime(from, to)).isEqualTo(Duration.ofMillis(59333));
     }
 

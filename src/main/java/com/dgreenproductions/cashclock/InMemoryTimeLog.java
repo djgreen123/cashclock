@@ -6,19 +6,23 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class InMemoryTimeLog {
+public class InMemoryTimeLog implements TimeLog {
     private List<TimeInterval> entries;
+    private LogListener logListener;
 
-    public InMemoryTimeLog(List<TimeInterval> entries) {
+    public InMemoryTimeLog(List<TimeInterval> entries, LogListener logListener) {
         this.entries = new ArrayList<>(entries);
+        this.logListener = logListener;
     }
 
-    public void add(Instant from, Instant to) {
+    @Override
+    public void log(Instant from, Instant to) {
         if (!from.isBefore(to)) {
             throw new IllegalArgumentException("illegal time log entry");
         }
 
         entries.add(new TimeInterval(from, to));
+        logListener.timeLogged(from, to);
     }
 
     public Duration getTotalTime(Instant from, Instant to) {
