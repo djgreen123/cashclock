@@ -23,6 +23,17 @@ public class InMemoryTimeLogTest {
     }
 
     @Test
+    public void canGetTotalTimeWhenOnlyTimeLoggedIsOutsideTheWindow() {
+        Instant start = Instant.parse("2018-05-12T20:59:59.123Z");
+        Instant end = start.plus(Duration.ofMinutes(2));
+        timeLog.log(start, end);
+
+        Instant windowStart = Instant.parse("2022-04-26T00:00:00Z");
+        Instant windowEnd = Instant.parse("2022-04-26T23:59:59Z");
+        assertThat(timeLog.getTotalTime(windowStart, windowEnd)).isEqualTo(Duration.ZERO);
+    }
+
+    @Test
     public void canGetTotalTimeOfSingleLogEntry() {
         Instant start = Instant.parse("2018-05-12T20:59:59.000Z");
         Instant end = start.plus(Duration.ofMinutes(1));

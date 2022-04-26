@@ -26,7 +26,8 @@ public class InMemoryTimeLog implements TimeLog {
     }
 
     public Duration getTotalTime(Instant from, Instant to) {
-        List<TimeInterval> clippedEntries = entries.stream().map(e -> clip(e, from, to)).collect(Collectors.toList());
+        List<TimeInterval> intersectingEntries = entries.stream().filter(e -> intervalIntersectsWindow(e, from, to)).collect(Collectors.toList());
+        List<TimeInterval> clippedEntries = intersectingEntries.stream().map(e -> clip(e, from, to)).collect(Collectors.toList());
         return sumOf(clippedEntries);
     }
 
@@ -36,6 +37,16 @@ public class InMemoryTimeLog implements TimeLog {
             total = total.plus(entry.getDuration());
         }
         return total;
+    }
+
+    private boolean intervalIntersectsWindow(TimeInterval timeInterval, Instant windowStart, Instant windowEnd) {
+        return !intervalIsOutsideWindow(timeInterval, windowStart, windowEnd);
+    }
+
+    private boolean intervalIsOutsideWindow(TimeInterval i, Instant windowStart, Instant windowEnd) {
+        // both from and to are before the start OR both from and to are after the end
+        return (i.getFrom().isBefore(windowStart) && i.getTo().isBefore(windowStart)) ||
+                (i.getFrom().isAfter(windowEnd) && i.getTo().isAfter(windowEnd));
     }
 
     private TimeInterval clip(TimeInterval timeInterval, Instant from, Instant to) {

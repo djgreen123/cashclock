@@ -20,6 +20,8 @@ public class LogFileReader {
     }
 
     public List<TimeInterval> readEntries() {
+        if (!logFilePath.toFile().exists()) return new ArrayList<>();
+
         List<TimeInterval> entries = new ArrayList<>();
         try {
             List<String> logLines = FileUtils.readLines(logFilePath.toFile(), "UTF-8");
