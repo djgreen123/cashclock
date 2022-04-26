@@ -20,6 +20,7 @@ public class ClockInAndOutMain {
         Timeline timeline = new Timeline(Instant.now());
         InMemoryTimeLog timeLog = new InMemoryTimeLog(reader.readEntries(), (from, to) -> writer.writeEntry(from, to));
         WorkTracker workTracker = new WorkTracker(timeline, timeLog);
+        new DailySummary(timeline, timeLog, System.out::println);
 
         Runnable runnable = () -> timeline.advanceBySeconds(1);
 

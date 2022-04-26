@@ -14,16 +14,18 @@ public class DailySummary {
         this.timeline = timeline;
         this.timeLog = timeLog;
         this.reporter = reporter;
-        scheduleNextReport();
+        scheduleNextReport(timeline.getCurrentTime());
     }
 
-    private void scheduleNextReport() {
-        timeline.schedule(new Action(timeline.getCurrentTime().plus(Duration.ofMinutes(1))) {
+    private void scheduleNextReport(Instant current) {
+        timeline.schedule(new Action(current.plus(Duration.ofMinutes(1))) {
             @Override
             public void perform() {
                 Instant startOfToday = getWhen().truncatedTo(ChronoUnit.DAYS);
                 Instant endOfToday = startOfToday.plus(Duration.ofDays(1)).minus(Duration.ofSeconds(1));
                 reporter.report(timeLog.getTotalTime(startOfToday, endOfToday));
+
+                scheduleNextReport(getWhen());
             }
         });
     }

@@ -26,7 +26,7 @@ public class WorkTracker {
         timeline.schedule(new Action(fromTime.plus(Duration.ofMinutes(1))) {
             @Override
             public void perform() {
-                timeLog.log(fromTime, getWhen());
+                if (clockedIn) timeLog.log(fromTime, getWhen());
                 scheduledNextLogEntry(getWhen());
             }
         });
@@ -38,7 +38,6 @@ public class WorkTracker {
             timeLog.log(from.get(), timeline.getCurrentTime());
             from = Optional.empty();
         }
-        timeline.cancelFutureActions();
         clockedIn = false;
     }
 
