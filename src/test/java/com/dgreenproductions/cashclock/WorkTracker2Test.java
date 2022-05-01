@@ -8,6 +8,7 @@ import java.time.Instant;
 import java.util.Optional;
 
 import static org.fest.assertions.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class WorkTracker2Test {
     private Instant start;
@@ -26,7 +27,7 @@ public class WorkTracker2Test {
     @Test
     public void canClockIn() {
         tracker.clockIn();
-        assertThat(listener.getClockedInTime()).isEqualTo(Optional.of(start));
+        assertThat(listener.getClockedInTimes()).containsOnly(start);
     }
 
     @Test
@@ -34,7 +35,7 @@ public class WorkTracker2Test {
         tracker.clockIn();
         timeline.advanceBySeconds(10);
         tracker.clockOut();
-        assertThat(listener.getClockedOutTime()).isEqualTo(Optional.of(start.plus(Duration.ofSeconds(10))));
+        assertThat(listener.getClockedOutTime()).containsOnly(start.plus(Duration.ofSeconds(10)));
     }
 
     @Test
@@ -44,5 +45,16 @@ public class WorkTracker2Test {
         tracker.clockOut();
         assertThat(listener.getSessionStart()).isEqualTo(Optional.of(start));
         assertThat(listener.getSessionEnd()).isEqualTo(Optional.of(start.plus(Duration.ofSeconds(1))));
+    }
+
+    @Test
+    public void canOnlyClockInOnce() {
+        tracker.clockIn();
+        assertThrows(IllegalStateException.class, () -> tracker.clockIn());
+    }
+
+    @Test
+    public void canOnlyClockOutIfClockedIn() {
+        assertThrows(IllegalStateException.class, () -> tracker.clockOut());
     }
 }

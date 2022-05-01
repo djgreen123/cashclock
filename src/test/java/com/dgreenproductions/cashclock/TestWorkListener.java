@@ -1,22 +1,24 @@
 package com.dgreenproductions.cashclock;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class TestWorkListener implements WorkListener {
-    private Optional<Instant> clockedInTime = Optional.empty();
-    private Optional<Instant> clockedOutTime = Optional.empty();
+    private List<Instant> clockedInTimes = new ArrayList<>();
+    private List<Instant> clockedOutTimes = new ArrayList<>();
     private Optional<Instant> sessionStart = Optional.empty();
     private Optional<Instant> sessionEnd = Optional.empty();
 
     @Override
     public void clockedIn(Instant clockInTime) {
-        clockedInTime = Optional.of(clockInTime);
+        clockedInTimes.add(clockInTime);
     }
 
     @Override
     public void clockedOut(Instant clockOutTime) {
-        clockedOutTime = Optional.of(clockOutTime);
+        clockedOutTimes.add(clockOutTime);
     }
 
     @Override
@@ -25,12 +27,12 @@ public class TestWorkListener implements WorkListener {
         this.sessionEnd = Optional.of(sessionEnd);
     }
 
-    public Optional<Instant> getClockedInTime() {
-        return clockedInTime;
+    public List<Instant> getClockedInTimes() {
+        return clockedInTimes;
     }
 
-    public Optional<Instant> getClockedOutTime() {
-        return clockedOutTime;
+    public List<Instant> getClockedOutTime() {
+        return clockedOutTimes;
     }
 
     public Optional<Instant> getSessionStart() {
