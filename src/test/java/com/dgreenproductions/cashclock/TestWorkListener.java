@@ -1,23 +1,43 @@
 package com.dgreenproductions.cashclock;
 
 import java.time.Instant;
+import java.util.Optional;
 
 public class TestWorkListener implements WorkListener {
-    private boolean clockedIn;
-    private Instant clockedInTime;
-
-    public boolean isClockedIn() {
-        return clockedIn;
-    }
+    private Optional<Instant> clockedInTime = Optional.empty();
+    private Optional<Instant> clockedOutTime = Optional.empty();
+    private Optional<Instant> sessionStart = Optional.empty();
+    private Optional<Instant> sessionEnd = Optional.empty();
 
     @Override
     public void clockedIn(Instant clockInTime) {
-        clockedIn = true;
-        clockedInTime = clockInTime;
+        clockedInTime = Optional.of(clockInTime);
     }
 
-    public Instant getClockedInTime() {
+    @Override
+    public void clockedOut(Instant clockOutTime) {
+        clockedOutTime = Optional.of(clockOutTime);
+    }
+
+    @Override
+    public void session(Instant sessionStart, Instant sessionEnd) {
+        this.sessionStart = Optional.of(sessionStart);
+        this.sessionEnd = Optional.of(sessionEnd);
+    }
+
+    public Optional<Instant> getClockedInTime() {
         return clockedInTime;
     }
 
+    public Optional<Instant> getClockedOutTime() {
+        return clockedOutTime;
+    }
+
+    public Optional<Instant> getSessionStart() {
+        return sessionStart;
+    }
+
+    public Optional<Instant> getSessionEnd() {
+        return sessionEnd;
+    }
 }
