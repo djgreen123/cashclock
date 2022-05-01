@@ -31,13 +31,13 @@ public class ClockInAndOutMain {
         Scanner keyboard = new Scanner(System.in);
         while (true) {
             String input = keyboard.nextLine();
-            if (workTracker.isClockedIn()) {
-                System.out.println("CLOCKED OUT " + Instant.now() + " (UTC)");
-                workTracker.clockOut();
-            } else {
-                System.out.println("CLOCKED IN " + Instant.now() + " (UTC)");
-                workTracker.clockIn();
-            }
+//            if (workTracker.isClockedIn()) {
+//                System.out.println("CLOCKED OUT " + Instant.now() + " (UTC)");
+//                workTracker.clockOut();
+//            } else {
+//                System.out.println("CLOCKED IN " + Instant.now() + " (UTC)");
+//                workTracker.clockIn();
+//            }
         }
     }
 
