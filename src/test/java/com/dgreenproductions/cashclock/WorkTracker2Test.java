@@ -57,4 +57,14 @@ public class WorkTracker2Test {
     public void canOnlyClockOutIfClockedIn() {
         assertThrows(IllegalStateException.class, () -> tracker.clockOut());
     }
+
+    // TODO
+//    @Test
+//    public void canNotClockOutAtSameTimeAsClockIn() {
+//
+//    }
+
+    //TODO Limit sessions to 8 hours of the day
+    //TODO Limit sessions to work days
+    //TODO Limit sessions to not include bank holidays
 }
