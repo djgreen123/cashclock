@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.fest.assertions.Assertions.assertThat;
 
@@ -21,6 +23,26 @@ public class WorkClockTest {
         clock = new TestClock(start);
         log = new WorkSessionLog();
         workClock = new WorkClock(clock, log);
+    }
+
+    @Test
+    public void notifiedOfSessionOnClockOut() {
+        List<Instant> startTimes = new ArrayList<>();
+        List<Instant> endTimes = new ArrayList<>();
+        SessionListener listener = (start, end) -> {
+            startTimes.add(start);
+            endTimes.add(end);
+        };
+        workClock.addListener(listener);
+
+        Instant start = clock.getCurrentTime();
+        workClock.clockIn();
+        clock.advance(Duration.ofSeconds(10));
+        Instant end = clock.getCurrentTime();
+        workClock.clockOut();
+
+        assertThat(startTimes).containsOnly(start);
+        assertThat(endTimes).containsOnly(end);
     }
 
     @Test

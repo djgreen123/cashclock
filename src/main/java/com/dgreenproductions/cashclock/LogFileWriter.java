@@ -2,7 +2,9 @@ package com.dgreenproductions.cashclock;
 
 import org.apache.commons.io.FileUtils;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -23,6 +25,9 @@ public class LogFileWriter {
             String fromText = formatter.format(from);
             String toText = formatter.format(to);
 
+            if (!Files.exists(logFilePath)) {
+                FileUtils.touch(logFilePath.toFile());
+            }
             FileUtils.writeLines(logFilePath.toFile(), List.of(fromText + ", " + toText), true);
         } catch (IOException e) {
             e.printStackTrace();

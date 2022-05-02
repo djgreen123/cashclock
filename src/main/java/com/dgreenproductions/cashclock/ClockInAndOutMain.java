@@ -1,5 +1,6 @@
 package com.dgreenproductions.cashclock;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.Collections;
@@ -13,19 +14,32 @@ public class ClockInAndOutMain {
     public static void main(String[] args) {
         Path path = Path.of("/Users/duncangreen/WarehouseDocuments/By Company/Sky/timelog.txt");
 
-        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-
         System.out.println("Work Tracker running...");
+
+        WorkSessionLog workSessionLog = new WorkSessionLog();
+        if (Files.exists(path)) {
+            LogFileReader2 reader = new LogFileReader2(path);
+            reader.readAll((from, to) -> workSessionLog.log(from, to));
+        }
+
+        WorkClock workClock = new WorkClock(new RealClock(), workSessionLog);
+
+        LogFileWriter writer = new LogFileWriter(path);
+        SessionListener listener = (start, end) -> {
+            writer.appendEntry(start, end);
+        };
+        workClock.addListener(listener);
+
         Scanner keyboard = new Scanner(System.in);
         while (true) {
-            String input = keyboard.nextLine();
-//            if (workTracker.isClockedIn()) {
-//                System.out.println("CLOCKED OUT " + Instant.now() + " (UTC)");
-//                workTracker.clockOut();
-//            } else {
-//                System.out.println("CLOCKED IN " + Instant.now() + " (UTC)");
-//                workTracker.clockIn();
-//            }
+            keyboard.nextLine();
+            if (workClock.isClockedIn()) {
+                System.out.println("CLOCKED OUT " + Instant.now() + " (UTC)");
+                workClock.clockOut();
+            } else {
+                System.out.println("CLOCKED IN " + Instant.now() + " (UTC)");
+                workClock.clockIn();
+            }
         }
     }
 

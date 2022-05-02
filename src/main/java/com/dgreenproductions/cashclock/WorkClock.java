@@ -3,11 +3,19 @@ package com.dgreenproductions.cashclock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
 
 public class WorkClock {
     private Clock clock;
     private WorkSessionLog log;
     private Instant clockInTime;
+    private List<SessionListener> listeners = new ArrayList<>();
+
+    public boolean isClockedIn() {
+        return clockedIn;
+    }
+
     private boolean clockedIn;
 
     public WorkClock(Clock clock, WorkSessionLog workSessionLog) {
@@ -21,7 +29,10 @@ public class WorkClock {
     }
 
     public void clockOut() {
-        log.log(clockInTime, clock.getCurrentTime());
+        Instant start = clockInTime;
+        Instant end = clock.getCurrentTime();
+        log.log(start, end);
+        listeners.stream().forEach(listener -> listener.sessionLogged(start, end));
         clockedIn = false;
     }
 
@@ -54,5 +65,9 @@ public class WorkClock {
     public Duration getTotalTimeThisMinute() {
         Instant startOfThisMinute = clock.getCurrentTime().truncatedTo(ChronoUnit.MINUTES);
         return getTotalTime(startOfThisMinute, clock.getCurrentTime());
+    }
+
+    public void addListener(SessionListener listener) {
+        listeners.add(listener);
     }
 }
