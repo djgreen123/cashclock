@@ -58,7 +58,14 @@ public class WorkClock {
 
     public Duration getTotalTimeToday() {
         Instant startOfToday = clock.getCurrentTime().truncatedTo(ChronoUnit.DAYS);
-        return getTotalTime(startOfToday, clock.getCurrentTime());
+        return minOf(Duration.ofHours(8), getTotalTime(startOfToday, clock.getCurrentTime()));
+    }
+
+    private Duration minOf(Duration d1, Duration d2) {
+        if (d1.compareTo(d2) > 0)
+            return d2;
+        else
+            return d1;
     }
 
     public Duration getTotalTimeThisHour() {

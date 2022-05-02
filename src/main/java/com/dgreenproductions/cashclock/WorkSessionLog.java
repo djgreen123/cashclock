@@ -2,9 +2,15 @@ package com.dgreenproductions.cashclock;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.MonthDay;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.groupingBy;
 
 public class WorkSessionLog {
     private List<WorkSession> sessions = new ArrayList<>();
@@ -39,10 +45,23 @@ public class WorkSessionLog {
 
     private Duration sumOf(List<WorkSession> entries) {
         Duration total = Duration.ZERO;
-        for (WorkSession entry : entries) {
-            total = total.plus(entry.getDuration());
+        Map<Instant, List<WorkSession>> byDay = entries.stream().collect(groupingBy(s -> s.getStart().truncatedTo(ChronoUnit.DAYS)));
+        for (Instant startOfDay : byDay.keySet()) {
+            Duration dailyTotal = Duration.ZERO;
+            List<WorkSession> dailySessions = byDay.get(startOfDay);
+            for (WorkSession dailySession : dailySessions) {
+                dailyTotal = dailyTotal.plus(dailySession.getDuration());
+            }
+            total = total.plus(minOf(dailyTotal, Duration.ofHours(8)));
         }
         return total;
+    }
+
+    private Duration minOf(Duration d1, Duration d2) {
+        if (d1.compareTo(d2) > 0)
+            return d2;
+        else
+            return d1;
     }
 
     private WorkSession clip(WorkSession WorkSession, Instant from, Instant to) {

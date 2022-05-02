@@ -46,6 +46,34 @@ public class WorkClockTest {
     }
 
     @Test
+    public void dailyTotalCannotExceed8Hours() {
+        Instant start = Instant.parse("2022-05-02T09:00:00.000Z");
+        clock.setCurrentTime(start);
+        workClock.clockIn();
+        clock.advance(Duration.ofHours(9));
+        workClock.clockOut();
+        assertThat(workClock.getTotalTimeToday()).isEqualTo(Duration.ofHours(8));
+    }
+
+    @Test
+    public void totalMustOnlyInclude8HoursMaxPerDay() {
+        Instant start = Instant.parse("2022-05-02T09:00:00.000Z");
+        clock.setCurrentTime(start);
+
+        // day 1 - 9 hours logged
+        workClock.clockIn();
+        clock.advance(Duration.ofHours(9));
+        workClock.clockOut();
+
+        clock.advance(Duration.ofHours(12));
+        workClock.clockIn();
+        clock.advance(Duration.ofHours(10));
+        workClock.clockOut();
+
+        assertThat(workClock.getTotalTime()).isEqualTo(Duration.ofHours(16));
+    }
+
+    @Test
     public void totalTimeIncreasesWhenClockedIn() {
         workClock.clockIn();
         clock.advance(Duration.ofSeconds(10));
