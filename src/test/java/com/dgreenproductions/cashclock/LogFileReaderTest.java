@@ -1,6 +1,7 @@
 package com.dgreenproductions.cashclock;
 
 import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -27,6 +28,11 @@ public class LogFileReaderTest {
         readSessions = new ArrayList<>();
         handler = (from, to) -> readSessions.add(new WorkSession(from, to));
         reader = new LogFileReader2(logFilePath);
+    }
+
+    @AfterEach
+    public void afterEach() {
+        logFilePath.toFile().delete();
     }
 
     @Test

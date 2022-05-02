@@ -13,15 +13,13 @@ import java.util.List;
 
 import static org.fest.assertions.Assertions.assertThat;
 
-public class LogIoTest {
+public class LogFileWriterTest {
     private Path logFilePath;
-    private LogFileReader reader;
     private LogFileWriter writer;
 
     @BeforeEach
     public void beforeEach() throws IOException {
         logFilePath = Files.createTempFile("", "");
-        reader = new LogFileReader(logFilePath);
         writer = new LogFileWriter(logFilePath);
     }
 
@@ -31,16 +29,10 @@ public class LogIoTest {
     }
 
     @Test
-    public void canReadEntries() {
-        writer.writeEntry(Instant.now(), Instant.now().plus(Duration.ofMinutes(1)));
-        assertThat(reader.readEntries()).hasSize(1);
-    }
-
-    @Test
-    public void canWriteTimeInterval() throws IOException {
+    public void canWrite() throws IOException {
         Instant from = Instant.parse("2018-05-12T20:59:59.123Z");
         Instant to = from.plus(Duration.ofMinutes(1));
-        writer.writeEntry(from, to);
+        writer.appendEntry(from, to);
         List<String> logLines = Files.readAllLines(logFilePath);
         assertThat(logLines).hasSize(1);
 
@@ -50,8 +42,8 @@ public class LogIoTest {
 
     @Test
     public void canWriteTwoEntries() throws IOException {
-        writer.writeEntry(Instant.now(), Instant.now().plus(Duration.ofSeconds(1)));
-        writer.writeEntry(Instant.now(), Instant.now().plus(Duration.ofSeconds(1)));
+        writer.appendEntry(Instant.now(), Instant.now().plus(Duration.ofSeconds(1)));
+        writer.appendEntry(Instant.now(), Instant.now().plus(Duration.ofSeconds(1)));
         List<String> logLines = Files.readAllLines(logFilePath);
         assertThat(logLines).hasSize(2);
     }

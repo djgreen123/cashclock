@@ -18,7 +18,7 @@ public class LogFileWriter {
         this.logFilePath = logFilePath;
     }
 
-    public void writeEntry(Instant from, Instant to) {
+    public void appendEntry(Instant from, Instant to) {
         try {
             String fromText = formatter.format(from);
             String toText = formatter.format(to);

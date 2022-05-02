@@ -1,10 +1,7 @@
 package com.dgreenproductions.cashclock;
 
 import java.nio.file.Path;
-import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.Scanner;
 import java.util.concurrent.Executors;
@@ -15,17 +12,8 @@ public class ClockInAndOutMain {
 
     public static void main(String[] args) {
         Path path = Path.of("/Users/duncangreen/WarehouseDocuments/By Company/Sky/timelog.txt");
-        LogFileReader reader = new LogFileReader(path);
-        LogFileWriter writer = new LogFileWriter(path);
-        Timeline timeline = new Timeline(Instant.now());
-        InMemoryTimeLog timeLog = new InMemoryTimeLog(reader.readEntries(), (from, to) -> writer.writeEntry(from, to));
-        WorkTracker workTracker = new WorkTracker(timeline, timeLog);
-        new DailySummary(timeline, timeLog, System.out::println);
-
-        Runnable runnable = () -> timeline.advanceBySeconds(1);
 
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-        executor.scheduleAtFixedRate(runnable, 1, 1, TimeUnit.SECONDS);
 
         System.out.println("Work Tracker running...");
         Scanner keyboard = new Scanner(System.in);
