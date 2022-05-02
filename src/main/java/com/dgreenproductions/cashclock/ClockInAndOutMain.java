@@ -1,5 +1,11 @@
 package com.dgreenproductions.cashclock;
 
+import jline.Terminal;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -11,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 
 public class ClockInAndOutMain {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         Path path = Path.of("/Users/duncangreen/WarehouseDocuments/By Company/Sky/timelog.txt");
 
         System.out.println("Work Tracker running...");
@@ -25,21 +31,63 @@ public class ClockInAndOutMain {
         WorkClock workClock = new WorkClock(new RealClock(), workSessionLog);
 
         LogFileWriter writer = new LogFileWriter(path);
-        SessionListener listener = (start, end) -> {
-            writer.appendEntry(start, end);
-        };
+        SessionListener listener = (start, end) -> writer.appendEntry(start, end);
         workClock.addListener(listener);
 
-        Scanner keyboard = new Scanner(System.in);
-        while (true) {
-            keyboard.nextLine();
+        JFrame frame = new JFrame("My First GUI");
+        frame.setLayout(new GridLayout(0, 3));
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(800,500);
+        JButton button1 = new JButton("Press");
+        button1.setFont(new Font("Serif", Font.PLAIN, 26));
+        button1.setSize(300, 100);
+        button1.setText("Clock IN");
+        button1.setBackground(Color.GREEN);
+        button1.setOpaque(true);
+        button1.addActionListener(e -> {
             if (workClock.isClockedIn()) {
                 System.out.println("CLOCKED OUT " + Instant.now() + " (UTC)");
                 workClock.clockOut();
+                button1.setText("Clock IN");
+                button1.setBackground(Color.GREEN);
             } else {
                 System.out.println("CLOCKED IN " + Instant.now() + " (UTC)");
                 workClock.clockIn();
+                button1.setText("Clock OUT");
+                button1.setBackground(Color.RED);
             }
+        });
+        frame.getContentPane().add(button1);
+
+        JLabel totalLabel = new JLabel("Total");
+        totalLabel.setFont(new Font("Serif", Font.PLAIN, 18));
+        frame.getContentPane().add(totalLabel);
+
+        JLabel todayLabel = new JLabel("Today");
+        todayLabel.setFont(new Font("Serif", Font.PLAIN, 18));
+        frame.getContentPane().add(todayLabel);
+
+        JLabel hourLabel = new JLabel("Hour");
+        todayLabel.setFont(new Font("Serif", Font.PLAIN, 18));
+        frame.getContentPane().add(hourLabel);
+
+        JLabel minuteLabel = new JLabel("Minute");
+        todayLabel.setFont(new Font("Serif", Font.PLAIN, 18));
+        frame.getContentPane().add(minuteLabel);
+
+        Runnable update = () -> {
+            totalLabel.setText("total: " + workClock.getTotalTime().toString());
+            todayLabel.setText("today: " +workClock.getTotalTimeToday().toString());
+            hourLabel.setText("hour: " +workClock.getTotalTimeThisHour().toString());
+            minuteLabel.setText("minute: " +workClock.getTotalTimeThisMinute().toString());
+        };
+
+        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+        executor.scheduleAtFixedRate(update, 100, 100, TimeUnit.MILLISECONDS);
+
+        frame.setVisible(true);
+
+        while (true) {
         }
     }
 

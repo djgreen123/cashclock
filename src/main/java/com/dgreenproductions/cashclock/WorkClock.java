@@ -47,7 +47,11 @@ public class WorkClock {
     public Duration getTotalTime(Instant from, Instant to) {
         Duration timeWorked = log.getTotalTime(from , to);
         if (clockedIn)
-            return timeWorked.plus(Duration.between(clockInTime, clock.getCurrentTime()));
+            if (from.isAfter(clockInTime)) {
+                return timeWorked.plus(Duration.between(from, clock.getCurrentTime()));
+            } else {
+                return timeWorked.plus(Duration.between(clockInTime, clock.getCurrentTime()));
+            }
         else
             return timeWorked;
     }
