@@ -18,4 +18,8 @@ public class TestClock implements Clock {
     public void advance(Duration duration) {
         currentTime = currentTime.plus(duration);
     }
+
+    public void setCurrentTime(Instant instant) {
+        currentTime = instant;
+    }
 }
