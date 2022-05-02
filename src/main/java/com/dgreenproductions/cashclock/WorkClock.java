@@ -2,12 +2,11 @@ package com.dgreenproductions.cashclock;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.temporal.ChronoUnit;
 
 public class WorkClock {
     private Clock clock;
-    private List<WorkSession> sessions = new ArrayList<>();
+    private WorkSessionLog log = new WorkSessionLog();
     private Instant clockInTime;
     private boolean clockedIn;
 
@@ -21,27 +20,38 @@ public class WorkClock {
     }
 
     public void clockOut() {
-        sessions.add(new WorkSession(clockInTime, clock.getCurrentTime()));
+        log.log(clockInTime, clock.getCurrentTime());
         clockedIn = false;
     }
 
     public Duration getTotalTime() {
-        Duration timeWorked = sumSessions();
+        Duration timeWorked = log.getTotalTime();
         if (clockedIn)
             return timeWorked.plus(Duration.between(clockInTime, clock.getCurrentTime()));
         else
             return timeWorked;
     }
 
-    private Duration sumSessions() {
-        Duration duration = Duration.ZERO;
-        for (WorkSession session : sessions) {
-            duration = duration.plus(session.getDuration());
-        }
-        return duration;
+    public Duration getTotalTime(Instant from, Instant to) {
+        Duration timeWorked = log.getTotalTime(from , to);
+        if (clockedIn)
+            return timeWorked.plus(Duration.between(clockInTime, clock.getCurrentTime()));
+        else
+            return timeWorked;
     }
 
-    public Duration getTodaysTotalTime() {
-        return getTotalTime();
+    public Duration getTotalTimeToday() {
+        Instant startOfToday = clock.getCurrentTime().truncatedTo(ChronoUnit.DAYS);
+        return getTotalTime(startOfToday, clock.getCurrentTime());
+    }
+
+    public Duration getTotalTimeThisHour() {
+        Instant startOfThisHour = clock.getCurrentTime().truncatedTo(ChronoUnit.HOURS);
+        return getTotalTime(startOfThisHour, clock.getCurrentTime());
+    }
+
+    public Duration getTotalTimeThisMinute() {
+        Instant startOfThisMinute = clock.getCurrentTime().truncatedTo(ChronoUnit.MINUTES);
+        return getTotalTime(startOfThisMinute, clock.getCurrentTime());
     }
 }

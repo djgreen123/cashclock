@@ -69,15 +69,11 @@ public class WorkClockTest {
         workClock.clockIn();
         clock.advance(Duration.ofSeconds(10));
         workClock.clockOut();
-        assertThat(workClock.getTodaysTotalTime()).isEqualTo(Duration.ofSeconds(10));
+        assertThat(workClock.getTotalTimeToday()).isEqualTo(Duration.ofSeconds(10));
     }
 
     @Test
-    public void howMuchHaveIWorkedToday() {
-        // clock in and out yesterday
-        // and then clock in and out today
-        // and check total time for today does not include yesterday's session
-
+    public void getTotalTimeToday() {
         Instant yesterdayStart = Instant.parse("2022-05-02T09:00:00.000Z");
         clock.setCurrentTime(yesterdayStart);
         workClock.clockIn();
@@ -90,6 +86,39 @@ public class WorkClockTest {
         clock.advance(Duration.ofHours(2));
         workClock.clockOut();
 
-        assertThat(workClock.getTodaysTotalTime()).isEqualTo(Duration.ofHours(2));
+        assertThat(workClock.getTotalTimeToday()).isEqualTo(Duration.ofHours(2));
+    }
+
+    @Test
+    public void getTotalTimeThisHour() {
+        Instant start = Instant.parse("2022-05-02T09:00:00.000Z");
+        clock.setCurrentTime(start);
+        workClock.clockIn();
+        clock.advance(Duration.ofMinutes(30));
+        workClock.clockOut();
+
+        clock.advance(Duration.ofMinutes(20)); // clocked in 9:50
+        workClock.clockIn();
+        clock.advance(Duration.ofMinutes(30));
+        workClock.clockOut();
+
+        // total time within the hour should include 10 mins from previous session
+        assertThat(workClock.getTotalTimeThisHour()).isEqualTo(Duration.ofMinutes(20));
+    }
+
+    @Test
+    public void getTotalTimeThisMinute() {
+        Instant start = Instant.parse("2022-05-02T09:00:00.000Z");
+        clock.setCurrentTime(start);
+        workClock.clockIn();
+        clock.advance(Duration.ofSeconds(30));
+        workClock.clockOut();
+
+        clock.advance(Duration.ofSeconds(20));
+        workClock.clockIn();
+        clock.advance(Duration.ofSeconds(30));
+        workClock.clockOut();
+
+        assertThat(workClock.getTotalTimeThisMinute()).isEqualTo(Duration.ofSeconds(20));
     }
 }

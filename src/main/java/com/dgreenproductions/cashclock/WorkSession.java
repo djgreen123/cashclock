@@ -12,6 +12,14 @@ public class WorkSession {
         this.end = end;
     }
 
+    public Instant getStart() {
+        return start;
+    }
+
+    public Instant getEnd() {
+        return end;
+    }
+
     public Duration getDuration() {
         return Duration.between(start, end);
     }
