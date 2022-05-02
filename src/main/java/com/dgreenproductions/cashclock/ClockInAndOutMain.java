@@ -1,16 +1,12 @@
 package com.dgreenproductions.cashclock;
 
-import jline.Terminal;
-
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
-import java.util.Scanner;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -35,60 +31,100 @@ public class ClockInAndOutMain {
         workClock.addListener(listener);
 
         JFrame frame = new JFrame("My First GUI");
-        frame.setLayout(new GridLayout(0, 3));
+        frame.setLayout(new GridLayout(5, 1));
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(800,500);
+        frame.setSize(500,350);
         JButton button1 = new JButton("Press");
-        button1.setFont(new Font("Serif", Font.PLAIN, 26));
-        button1.setSize(300, 100);
+        button1.setFont(new Font("Serif", Font.PLAIN, 72));
+        button1.setSize(500, 100);
         button1.setText("Clock IN");
-        button1.setBackground(Color.GREEN);
+        button1.setBackground(Color.RED);
         button1.setOpaque(true);
         button1.addActionListener(e -> {
             if (workClock.isClockedIn()) {
                 System.out.println("CLOCKED OUT " + Instant.now() + " (UTC)");
                 workClock.clockOut();
                 button1.setText("Clock IN");
-                button1.setBackground(Color.GREEN);
+                button1.setBackground(Color.RED);
             } else {
                 System.out.println("CLOCKED IN " + Instant.now() + " (UTC)");
                 workClock.clockIn();
                 button1.setText("Clock OUT");
-                button1.setBackground(Color.RED);
+                button1.setBackground(Color.GREEN);
             }
         });
         frame.getContentPane().add(button1);
 
         JLabel totalLabel = new JLabel("Total");
-        totalLabel.setFont(new Font("Serif", Font.PLAIN, 18));
+        totalLabel.setFont(new Font("Serif", Font.PLAIN, 40));
         frame.getContentPane().add(totalLabel);
 
+        JLabel monthLabel = new JLabel("Month");
+        monthLabel.setFont(new Font("Serif", Font.PLAIN, 40));
+        frame.getContentPane().add(monthLabel);
+
         JLabel todayLabel = new JLabel("Today");
-        todayLabel.setFont(new Font("Serif", Font.PLAIN, 18));
+        todayLabel.setFont(new Font("Serif", Font.PLAIN, 40));
         frame.getContentPane().add(todayLabel);
 
         JLabel hourLabel = new JLabel("Hour");
-        todayLabel.setFont(new Font("Serif", Font.PLAIN, 18));
+        hourLabel.setFont(new Font("Serif", Font.PLAIN, 40));
         frame.getContentPane().add(hourLabel);
 
-        JLabel minuteLabel = new JLabel("Minute");
-        todayLabel.setFont(new Font("Serif", Font.PLAIN, 18));
-        frame.getContentPane().add(minuteLabel);
-
         Runnable update = () -> {
-            totalLabel.setText("total: " + workClock.getTotalTime().toString());
-            todayLabel.setText("today: " +workClock.getTotalTimeToday().toString());
-            hourLabel.setText("hour: " +workClock.getTotalTimeThisHour().toString());
-            minuteLabel.setText("minute: " +workClock.getTotalTimeThisMinute().toString());
+
+            Duration totalTime = workClock.getTotalTime();
+            totalLabel.setText(String.format("total: %s, (£%.2f)", formatTotalDuration(totalTime), asCash(totalTime)));
+
+            Duration totalTimeThisMonth = workClock.getTotalTimeThisMonth();
+            monthLabel.setText(String.format("month: %s, (£%.2f)", formatTotalDuration(totalTimeThisMonth), asCash(totalTimeThisMonth)));
+
+            Duration totalTimeToday = workClock.getTotalTimeToday();
+            todayLabel.setText(String.format("today: %s, (£%.2f)", formatDuration(totalTimeToday), asCash(totalTimeToday)));
+
+            Duration totalTimeThisHour = workClock.getTotalTimeThisHour();
+            hourLabel.setText(String.format("hour: %s, (£%.2f)", formatDuration(totalTimeThisHour), asCash(totalTimeThisHour)));
         };
 
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-        executor.scheduleAtFixedRate(update, 100, 100, TimeUnit.MILLISECONDS);
+        executor.scheduleAtFixedRate(update, 1, 1, TimeUnit.SECONDS);
 
         frame.setVisible(true);
 
         while (true) {
         }
+    }
+
+    private static double asCash(Duration duration) {
+        double grossPerDay = 750;
+        double conversion = 0.5412;
+        double netPerDay = grossPerDay * conversion;
+        double netPerHour = netPerDay / 8.0;
+        double netPerSecond = netPerHour / 3600.0;
+        double cash = duration.toSeconds() * netPerSecond;
+        return cash;
+    }
+
+    private static String formatTotalDuration(Duration duration) {
+        long hours = duration.toHours();
+        return String.format("%s days", hours / 8.0);
+    }
+
+    private static String formatDuration(Duration duration) {
+        String asString = "";
+        if (duration.compareTo(Duration.ofDays(1).minus(Duration.ofSeconds(1))) > 0) {
+            asString = asString + String.format("%sd", duration.toDaysPart());
+        }
+        if (duration.compareTo(Duration.ofHours(1).minus(Duration.ofSeconds(1))) > 0) {
+            asString = asString + String.format(" %sh", duration.toHoursPart());
+        }
+        if (duration.compareTo(Duration.ofMinutes(1).minus(Duration.ofSeconds(1))) > 0) {
+            asString = asString + String.format(" %sm", duration.toMinutesPart());
+        }
+        asString = asString + String.format(" %ss",
+                duration.toSecondsPart());
+
+        return asString;
     }
 
 //    public static void main(String[] args) {

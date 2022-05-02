@@ -1,8 +1,7 @@
 package com.dgreenproductions.cashclock;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
+import java.time.*;
+import java.time.temporal.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,6 +54,18 @@ public class WorkClock {
         else
             return timeWorked;
     }
+
+    public Duration getTotalTimeThisMonth() {
+        try {
+            Instant now = clock.getCurrentTime();
+            Instant firstDayOfMonth = LocalDateTime.ofInstant(now, ZoneOffset.UTC).with(TemporalAdjusters.firstDayOfMonth()).toInstant(ZoneOffset.UTC);
+            return getTotalTime(firstDayOfMonth.truncatedTo(ChronoUnit.DAYS), clock.getCurrentTime());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return Duration.ZERO;
+    }
+
 
     public Duration getTotalTimeToday() {
         Instant startOfToday = clock.getCurrentTime().truncatedTo(ChronoUnit.DAYS);
