@@ -13,12 +13,14 @@ public class WorkClockTest {
     private Instant start;
     private TestClock clock;
     private WorkClock workClock;
+    private WorkSessionLog log;
 
     @BeforeEach
     void setUp() {
         start = Instant.now();
         clock = new TestClock(start);
-        workClock = new WorkClock(clock);
+        log = new WorkSessionLog();
+        workClock = new WorkClock(clock, log);
     }
 
     @Test

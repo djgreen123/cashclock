@@ -6,12 +6,13 @@ import java.time.temporal.ChronoUnit;
 
 public class WorkClock {
     private Clock clock;
-    private WorkSessionLog log = new WorkSessionLog();
+    private WorkSessionLog log;
     private Instant clockInTime;
     private boolean clockedIn;
 
-    public WorkClock(Clock clock) {
+    public WorkClock(Clock clock, WorkSessionLog workSessionLog) {
         this.clock = clock;
+        this.log = workSessionLog;
     }
 
     public void clockIn() {
