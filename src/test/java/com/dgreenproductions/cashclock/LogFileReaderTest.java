@@ -20,14 +20,14 @@ public class LogFileReaderTest {
     private Path logFilePath;
     private List<WorkSession> readSessions;
     private WorkSessionHandler handler;
-    private LogFileReader2 reader;
+    private LogFileReader reader;
 
     @BeforeEach
     void setUp() throws IOException {
         logFilePath = Files.createTempFile("", "");
         readSessions = new ArrayList<>();
         handler = (from, to) -> readSessions.add(new WorkSession(from, to));
-        reader = new LogFileReader2(logFilePath);
+        reader = new LogFileReader(logFilePath);
     }
 
     @AfterEach

@@ -10,11 +10,11 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-public class LogFileReader2 {
+public class LogFileReader {
     private Path logFilePath;
     private DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME.withZone(ZoneId.from(ZoneOffset.UTC));
 
-    public LogFileReader2(Path logFilePath) {
+    public LogFileReader(Path logFilePath) {
         this.logFilePath = logFilePath;
     }
 

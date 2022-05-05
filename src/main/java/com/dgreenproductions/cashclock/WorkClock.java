@@ -43,6 +43,20 @@ public class WorkClock {
             return timeWorked;
     }
 
+    public Duration getTotalTime(Instant from) {
+        Instant to = clock.getCurrentTime();
+        Duration timeWorked = log.getTotalTime(from , to);
+        if (clockedIn)
+            if (from.isAfter(clockInTime)) {
+                return timeWorked.plus(Duration.between(from, clock.getCurrentTime()));
+            } else {
+                return timeWorked.plus(Duration.between(clockInTime, clock.getCurrentTime()));
+            }
+        else
+            return timeWorked;
+    }
+
+
     public Duration getTotalTime(Instant from, Instant to) {
         Duration timeWorked = log.getTotalTime(from , to);
         if (clockedIn)
@@ -57,9 +71,23 @@ public class WorkClock {
 
     public Duration getTotalTimeThisMonth() {
         try {
-            Instant now = clock.getCurrentTime();
-            Instant firstDayOfMonth = LocalDateTime.ofInstant(now, ZoneOffset.UTC).with(TemporalAdjusters.firstDayOfMonth()).toInstant(ZoneOffset.UTC);
+            Instant startOfToday = clock.getCurrentTime().truncatedTo(ChronoUnit.DAYS);
+            Instant firstDayOfMonth = LocalDateTime.ofInstant(startOfToday, ZoneOffset.UTC).with(TemporalAdjusters.firstDayOfMonth()).toInstant(ZoneOffset.UTC);
             return getTotalTime(firstDayOfMonth.truncatedTo(ChronoUnit.DAYS), clock.getCurrentTime());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return Duration.ZERO;
+    }
+
+    public Duration getTotalTimePreviousMonth() {
+        try {
+            Instant startOfToday = clock.getCurrentTime().truncatedTo(ChronoUnit.DAYS);
+            Instant firstDayOfMonth = LocalDateTime.ofInstant(startOfToday, ZoneOffset.UTC).with(TemporalAdjusters.firstDayOfMonth()).toInstant(ZoneOffset.UTC);
+            Instant finalDayOfPreviousMonth = firstDayOfMonth.minus(Duration.ofDays(1));
+            Instant firstDatOfPreviousMonth = LocalDateTime.ofInstant(finalDayOfPreviousMonth, ZoneOffset.UTC).with(TemporalAdjusters.firstDayOfMonth()).toInstant(ZoneOffset.UTC);
+            return getTotalTime(firstDatOfPreviousMonth.truncatedTo(ChronoUnit.DAYS),
+                    finalDayOfPreviousMonth.truncatedTo(ChronoUnit.DAYS).plus(Duration.ofHours(23)).plus(Duration.ofMinutes(59)).plus(Duration.ofSeconds(59)));
         } catch (Exception e) {
             e.printStackTrace();
         }
