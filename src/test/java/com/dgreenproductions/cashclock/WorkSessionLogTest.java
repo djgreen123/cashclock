@@ -19,6 +19,14 @@ public class WorkSessionLogTest {
     }
 
     @Test
+    public void maxDailyIs8Hours() {
+        Instant start = Instant.parse("2022-05-02T09:00:00.000Z");
+        Instant end = Instant.parse("2022-05-02T18:00:00.000Z");
+        timeLog.log(start, end);
+        assertThat(timeLog.getTotalTime(start.truncatedTo(ChronoUnit.DAYS), end)).isEqualTo(Duration.ofHours(8));
+    }
+
+    @Test
     public void canGetTotalTimeWhenOnlyTimeLoggedIsOutsideTheWindow() {
         Instant start = Instant.parse("2018-05-12T20:59:59.123Z");
         Instant end = start.plus(Duration.ofMinutes(2));

@@ -35,45 +35,47 @@ public class WorkClock {
         clockedIn = false;
     }
 
-    public Duration getTotalTime() {
-        Duration timeWorked = log.getTotalTime();
-        if (clockedIn)
-            return timeWorked.plus(Duration.between(clockInTime, clock.getCurrentTime()));
-        else
-            return timeWorked;
+    public Duration getRunningTotalTime() {
+        return getRunningTotalTime(Instant.EPOCH);
     }
-
-    public Duration getTotalTime(Instant from) {
-        Instant to = clock.getCurrentTime();
-        Duration timeWorked = log.getTotalTime(from , to);
-        if (clockedIn)
-            if (from.isAfter(clockInTime)) {
-                return timeWorked.plus(Duration.between(from, clock.getCurrentTime()));
-            } else {
-                return timeWorked.plus(Duration.between(clockInTime, clock.getCurrentTime()));
-            }
-        else
-            return timeWorked;
-    }
-
 
     public Duration getTotalTime(Instant from, Instant to) {
         Duration timeWorked = log.getTotalTime(from , to);
-        if (clockedIn)
-            if (from.isAfter(clockInTime)) {
-                return timeWorked.plus(Duration.between(from, clock.getCurrentTime()));
-            } else {
-                return timeWorked.plus(Duration.between(clockInTime, clock.getCurrentTime()));
-            }
-        else
-            return timeWorked;
+        return timeWorked;
     }
 
-    public Duration getTotalTimeThisMonth() {
+    public Duration getRunningTotalTime(Instant from) {
+        Instant to = clock.getCurrentTime();
+        Instant startOfToday = to.truncatedTo(ChronoUnit.DAYS);
+        Duration timeWorkedUpToToday = log.getTotalTime(from , startOfToday.minus(Duration.ofSeconds(1)));
+        Duration timeWorkedSoFarToday = log.getTotalTime(latestOf(startOfToday, from), to);
+        if (clockedIn)
+            if (from.isAfter(clockInTime)) {
+                Duration runningDuration = Duration.between(from, clock.getCurrentTime());
+                Duration totalToday = minOf(timeWorkedSoFarToday.plus(runningDuration), Duration.ofHours(8));
+                return timeWorkedUpToToday.plus(totalToday);
+            } else {
+                Duration runningDuration = Duration.between(clockInTime, clock.getCurrentTime());
+                Duration totalToday = minOf(timeWorkedSoFarToday.plus(runningDuration), Duration.ofHours(8));
+                return timeWorkedUpToToday.plus(totalToday);
+            }
+        else
+            return timeWorkedUpToToday.plus(timeWorkedSoFarToday);
+    }
+
+    private Instant latestOf(Instant i1, Instant i2) {
+        if (i1.isAfter(i2)) {
+            return i1;
+        } else {
+            return i2;
+        }
+    }
+
+    public Duration getRunningTotalTimeThisMonth() {
         try {
             Instant startOfToday = clock.getCurrentTime().truncatedTo(ChronoUnit.DAYS);
             Instant firstDayOfMonth = LocalDateTime.ofInstant(startOfToday, ZoneOffset.UTC).with(TemporalAdjusters.firstDayOfMonth()).toInstant(ZoneOffset.UTC);
-            return getTotalTime(firstDayOfMonth.truncatedTo(ChronoUnit.DAYS), clock.getCurrentTime());
+            return getRunningTotalTime(firstDayOfMonth.truncatedTo(ChronoUnit.DAYS));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -94,10 +96,12 @@ public class WorkClock {
         return Duration.ZERO;
     }
 
-
-    public Duration getTotalTimeToday() {
-        Instant startOfToday = clock.getCurrentTime().truncatedTo(ChronoUnit.DAYS);
-        return minOf(Duration.ofHours(8), getTotalTime(startOfToday, clock.getCurrentTime()));
+    public Duration getRunningTotalToday() {
+        Duration duration = log.getTimeLoggedOnDayContaining(clock.getCurrentTime());
+        if (clockedIn) {
+            duration = duration.plus(Duration.between(clockInTime, clock.getCurrentTime()));
+        }
+        return minOf(Duration.ofHours(8), duration);
     }
 
     private Duration minOf(Duration d1, Duration d2) {
@@ -107,14 +111,21 @@ public class WorkClock {
             return d1;
     }
 
-    public Duration getTotalTimeThisHour() {
-        Instant startOfThisHour = clock.getCurrentTime().truncatedTo(ChronoUnit.HOURS);
-        return getTotalTime(startOfThisHour, clock.getCurrentTime());
+    public Duration getRunningTimeThisHour() {
+        Instant startOfToday = clock.getCurrentTime().truncatedTo(ChronoUnit.DAYS);
+        Instant startOfCurrentHour = clock.getCurrentTime().truncatedTo(ChronoUnit.HOURS);
+        Duration loggedUpToStartOfCurrentHour = log.getTotalTime(startOfToday, startOfCurrentHour);
+        Duration remainingClockableTimeInCurrentHour = Duration.ofHours(8).minus(loggedUpToStartOfCurrentHour);
+        Duration runningTotalForCurrentHour = log.getTotalTime(startOfCurrentHour, clock.getCurrentTime());
+        if (clockedIn) {
+            runningTotalForCurrentHour = runningTotalForCurrentHour.plus(Duration.between(clockInTime, clock.getCurrentTime()));
+        }
+        return minOf(remainingClockableTimeInCurrentHour, runningTotalForCurrentHour);
     }
 
     public Duration getTotalTimeThisMinute() {
         Instant startOfThisMinute = clock.getCurrentTime().truncatedTo(ChronoUnit.MINUTES);
-        return getTotalTime(startOfThisMinute, clock.getCurrentTime());
+        return getRunningTotalTime(startOfThisMinute);
     }
 
     public void addListener(SessionListener listener) {

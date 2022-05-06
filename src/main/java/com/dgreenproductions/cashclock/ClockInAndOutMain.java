@@ -80,22 +80,22 @@ public class ClockInAndOutMain {
 
         Runnable update = () -> {
 
-            Duration totalTime = workClock.getTotalTime();
+            Duration totalTime = workClock.getRunningTotalTime();
             totalLabel.setText(String.format("total: %s, (£%.2f)", formatTotalDuration(totalTime), asCash(totalTime)));
 
-            Duration totalTimeThisMonth = workClock.getTotalTimeThisMonth();
+            Duration totalTimeThisMonth = workClock.getRunningTotalTimeThisMonth();
             monthLabel.setText(String.format("this month: %s, (£%.2f)", formatTotalDuration(totalTimeThisMonth), asCash(totalTimeThisMonth)));
 
             Duration totalTimePreviousMonth = workClock.getTotalTimePreviousMonth();
             previousMonthLabel.setText(String.format("last month: %s, (£%.2f)", formatTotalDuration(totalTimePreviousMonth), asCash(totalTimePreviousMonth)));
 
-            Duration totalTimeToday = workClock.getTotalTimeToday();
+            Duration totalTimeToday = workClock.getRunningTotalToday();
             if (Duration.ofHours(8).compareTo(totalTimeToday) <= 0) {
                 todayLabel.setBackground(Color.GREEN);
             }
             todayLabel.setText(String.format("today: %s, (£%.2f)", formatDuration(totalTimeToday), asCash(totalTimeToday)));
 
-            Duration totalTimeThisHour = workClock.getTotalTimeThisHour();
+            Duration totalTimeThisHour = workClock.getRunningTimeThisHour();
             hourLabel.setText(String.format("hour: %s, (£%.2f)", formatDuration(totalTimeThisHour), asCash(totalTimeThisHour)));
         };
 

@@ -27,10 +27,6 @@ public class WorkSessionLog {
         return sumOf(clippedEntries);
     }
 
-    public Duration getTotalTime() {
-        return sumOf(sessions);
-    }
-
     private boolean intervalIntersectsWindow(WorkSession WorkSession, Instant windowStart, Instant windowEnd) {
         return !intervalIsOutsideWindow(WorkSession, windowStart, windowEnd);
     }
@@ -72,5 +68,19 @@ public class WorkSessionLog {
 
     private Instant earlierOf(Instant i1, Instant i2) {
         if (i1.isBefore(i2)) return i1; else return i2;
+    }
+
+    private Duration sum(List<WorkSession> sessions) {
+        Duration total = Duration.ZERO;
+        for (WorkSession session : sessions) {
+            total = total.plus(session.getDuration());
+        }
+        return total;
+    }
+
+    public Duration getTimeLoggedOnDayContaining(Instant instant) {
+        Map<Instant, List<WorkSession>> byDay = sessions.stream().collect(groupingBy(s -> s.getStart().truncatedTo(ChronoUnit.DAYS)));
+        List<WorkSession> workSessions = byDay.get(instant.truncatedTo(ChronoUnit.DAYS));
+        return sum(workSessions);
     }
 }

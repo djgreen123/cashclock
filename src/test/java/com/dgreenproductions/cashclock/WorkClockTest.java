@@ -52,7 +52,7 @@ public class WorkClockTest {
         workClock.clockIn();
         clock.advance(Duration.ofHours(9));
         workClock.clockOut();
-        assertThat(workClock.getTotalTimeToday()).isEqualTo(Duration.ofHours(8));
+        assertThat(workClock.getRunningTotalToday()).isEqualTo(Duration.ofHours(8));
     }
 
     @Test
@@ -70,7 +70,7 @@ public class WorkClockTest {
         clock.advance(Duration.ofHours(10));
         workClock.clockOut();
 
-        assertThat(workClock.getTotalTime()).isEqualTo(Duration.ofHours(16));
+        assertThat(workClock.getRunningTotalTime()).isEqualTo(Duration.ofHours(16));
     }
 
     @Test
@@ -78,11 +78,11 @@ public class WorkClockTest {
         workClock.clockIn();
         clock.advance(Duration.ofSeconds(10));
 
-        assertThat(workClock.getTotalTime()).isEqualTo(Duration.ofSeconds(10));
+        assertThat(workClock.getRunningTotalTime()).isEqualTo(Duration.ofSeconds(10));
 
         clock.advance(Duration.ofMillis(20));
 
-        assertThat(workClock.getTotalTime()).isEqualTo(Duration.ofSeconds(10).plus(Duration.ofMillis(20)));
+        assertThat(workClock.getRunningTotalTime()).isEqualTo(Duration.ofSeconds(10).plus(Duration.ofMillis(20)));
     }
 
     @Test
@@ -91,9 +91,9 @@ public class WorkClockTest {
         clock.advance(Duration.ofSeconds(10));
         workClock.clockOut();
         clock.advance(Duration.ofSeconds(5));
-        assertThat(workClock.getTotalTime()).isEqualTo(Duration.ofSeconds(10));
+        assertThat(workClock.getRunningTotalTime()).isEqualTo(Duration.ofSeconds(10));
         clock.advance(Duration.ofSeconds(2));
-        assertThat(workClock.getTotalTime()).isEqualTo(Duration.ofSeconds(10));
+        assertThat(workClock.getRunningTotalTime()).isEqualTo(Duration.ofSeconds(10));
     }
 
     @Test
@@ -105,7 +105,7 @@ public class WorkClockTest {
         workClock.clockIn();
         clock.advance(Duration.ofSeconds(5));
         workClock.clockOut();
-        assertThat(workClock.getTotalTime()).isEqualTo(Duration.ofSeconds(15));
+        assertThat(workClock.getRunningTotalTime()).isEqualTo(Duration.ofSeconds(15));
     }
 
     @Test
@@ -113,7 +113,7 @@ public class WorkClockTest {
         workClock.clockIn();
         clock.advance(Duration.ofNanos(1));
         workClock.clockOut();
-        assertThat(workClock.getTotalTime()).isEqualTo(Duration.ofNanos(1));
+        assertThat(workClock.getRunningTotalTime()).isEqualTo(Duration.ofNanos(1));
     }
 
     @Test
@@ -121,7 +121,71 @@ public class WorkClockTest {
         workClock.clockIn();
         clock.advance(Duration.ofSeconds(10));
         workClock.clockOut();
-        assertThat(workClock.getTotalTimeToday()).isEqualTo(Duration.ofSeconds(10));
+        assertThat(workClock.getRunningTotalToday()).isEqualTo(Duration.ofSeconds(10));
+    }
+
+    @Test
+    public void getRunningTotalThisHourWhenNothingLoggedToday() {
+        Instant start = Instant.parse("2022-05-02T09:00:00.000Z");
+        clock.setCurrentTime(start);
+        workClock.clockIn();
+        clock.advance(Duration.ofMinutes(10));
+        assertThat(workClock.getRunningTimeThisHour()).isEqualTo(Duration.ofMinutes(10));
+    }
+
+    @Test
+    public void getRunningTotalThisHourSpansMultipleSessions() {
+        Instant start = Instant.parse("2022-05-02T09:55:00.000Z");
+        clock.setCurrentTime(start);
+        workClock.clockIn();
+        clock.advance(Duration.ofMinutes(10));
+        workClock.clockOut();
+        clock.advance(Duration.ofSeconds(1));
+        workClock.clockIn();
+        clock.advance(Duration.ofSeconds(19));
+        assertThat(workClock.getRunningTimeThisHour()).isEqualTo(Duration.ofMinutes(5).plus(Duration.ofSeconds(19)));
+    }
+
+    @Test
+    public void getRunningTotalThisHourWhen8HoursAlreadyLoggedBeforeCurrentHourStarts() {
+        Instant start = Instant.parse("2022-05-02T09:00:00.000Z");
+        clock.setCurrentTime(start);
+        workClock.clockIn();
+        clock.advance(Duration.ofHours(8));
+        workClock.clockOut();
+
+        clock.advance(Duration.ofSeconds(10));
+        workClock.clockIn();
+        clock.advance(Duration.ofSeconds(20));
+        assertThat(workClock.getRunningTimeThisHour()).isEqualTo(Duration.ofSeconds(0));
+    }
+
+    @Test
+    public void getRunningTotalThisHourWhen8HoursElapsesDuringThisHour() {
+        Instant start = Instant.parse("2022-05-02T09:30:00.000Z");
+        clock.setCurrentTime(start);
+        workClock.clockIn();
+        clock.advance(Duration.ofHours(7).plus(Duration.ofMinutes(50)));
+        workClock.clockOut();
+
+        // npw 5:20pm - worked 7.5 hours up to 5pm.  So 30 mins clockable time remains after 5pm
+        clock.advance(Duration.ofSeconds(1));
+        workClock.clockIn();
+        clock.advance(Duration.ofMinutes(32));
+        assertThat(workClock.getRunningTimeThisHour()).isEqualTo(Duration.ofMinutes(30));
+    }
+
+    @Test
+    public void getRunningTotalThisHourClippedTo8HoursPerDay() {
+        Instant start = Instant.parse("2022-05-02T09:00:00.000Z");
+        clock.setCurrentTime(start);
+        workClock.clockIn();
+        clock.advance(Duration.ofHours(8));
+        workClock.clockOut();
+        clock.advance(Duration.ofMinutes(10));
+        workClock.clockIn();
+        clock.advance(Duration.ofMinutes(3));
+        assertThat(workClock.getRunningTimeThisHour()).isEqualTo(Duration.ofMinutes(0));
     }
 
     @Test
@@ -138,7 +202,7 @@ public class WorkClockTest {
         clock.advance(Duration.ofHours(2));
         workClock.clockOut();
 
-        assertThat(workClock.getTotalTimeToday()).isEqualTo(Duration.ofHours(2));
+        assertThat(workClock.getRunningTotalToday()).isEqualTo(Duration.ofHours(2));
     }
 
     @Test
@@ -155,7 +219,7 @@ public class WorkClockTest {
         workClock.clockOut();
 
         // total time within the hour should include 10 mins from previous session
-        assertThat(workClock.getTotalTimeThisHour()).isEqualTo(Duration.ofMinutes(20));
+        assertThat(workClock.getRunningTimeThisHour()).isEqualTo(Duration.ofMinutes(20));
     }
 
     @Test
