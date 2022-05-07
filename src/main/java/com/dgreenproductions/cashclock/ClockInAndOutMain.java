@@ -7,9 +7,14 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+
+import static java.awt.BorderLayout.CENTER;
 
 public class ClockInAndOutMain {
 
@@ -32,13 +37,18 @@ public class ClockInAndOutMain {
 
         UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         JFrame frame = new JFrame("Work Clock - DG, Sky");
-        frame.setLayout(new FlowLayout(FlowLayout.CENTER));
+        frame.setLayout(new GridBagLayout());
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(550,400);
+        frame.setSize(550,900);
+
+        GridBagConstraints c = new GridBagConstraints();
+        c.fill = GridBagConstraints.BOTH;
+        c.weightx = c.weighty = 1.0;
+
         JButton checkInOutButton = new JButton("Press");
-        frame.add(checkInOutButton);
+        c.gridy = 0;
+        frame.add(checkInOutButton, c);
         checkInOutButton.setFont(new Font("Serif", Font.PLAIN, 50));
-        checkInOutButton.setSize(800, 200);
         checkInOutButton.setText("Clock IN");
         checkInOutButton.setBorderPainted(false);
         checkInOutButton.setBackground(Color.RED);
@@ -59,31 +69,87 @@ public class ClockInAndOutMain {
 
         JLabel totalLabel = new JLabel("Total");
         totalLabel.setFont(new Font("Serif", Font.PLAIN, 40));
-        frame.add(totalLabel);
+        c.gridy = 1;
+        frame.add(totalLabel, c);
 
         JLabel monthLabel = new JLabel("This Month");
         monthLabel.setFont(new Font("Serif", Font.PLAIN, 40));
-        frame.add(monthLabel);
+        c.gridy = 2;
+        frame.add(monthLabel, c);
+
+        JPanel bucketSummaryPanel = new JPanel();
+        bucketSummaryPanel.setSize(550, 300);
+        bucketSummaryPanel.setFont(new Font("Serif", Font.PLAIN, 15));
+        bucketSummaryPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 10));
+        c.gridy = 3;
+        frame.add(bucketSummaryPanel, c);
+
 
         JLabel previousMonthLabel = new JLabel("This Month");
         previousMonthLabel.setFont(new Font("Serif", Font.PLAIN, 40));
-        frame.add(previousMonthLabel);
+        c.gridy = 4;
+        frame.add(previousMonthLabel, c);
 
         JLabel todayLabel = new JLabel("Today");
         todayLabel.setFont(new Font("Serif", Font.PLAIN, 40));
         todayLabel.setOpaque(true);
-        frame.add(todayLabel);
+        c.gridy = 5;
+        frame.add(todayLabel, c);
 
         JLabel hourLabel = new JLabel("Hour");
         hourLabel.setFont(new Font("Serif", Font.PLAIN, 40));
-        frame.add(hourLabel);
+        c.gridy = 6;
+        frame.add(hourLabel, c);
+
+
+        Buckets buckets = new Buckets();
+        buckets.add("Rent", 925);
+        buckets.add("Food", 250);
+        buckets.add("Gas & Electric", 60);
+        buckets.add("Water", 20);
+        buckets.add("Council Tax", 116);
+        buckets.add("Storage", 112.20);
+        buckets.add("Pension", 1500);
+        buckets.add("Car tax", 200 / 12.0);
+        buckets.add("Car wash", 17);
+        buckets.add("Car servicing", 500 / 12.0);
+        buckets.add("NOW TV", 35);
+        buckets.add("Netflix", 9.99);
+        buckets.add("Savings", 4000);
+        buckets.add("Entertainment", 10000);
+
+        Map<String, JLabel> bucketLabelMap = new HashMap<>();
+        List<Bucket> bucketList = buckets.getBuckets();
+        for (Bucket bucket : bucketList) {
+            JLabel bucketLabel = new JLabel(bucket.getName());
+            bucketLabel.setOpaque(true);
+            bucketSummaryPanel.add(bucketLabel);
+            bucketLabelMap.put(bucket.getName(), bucketLabel);
+        }
 
         Runnable update = () -> {
             Duration totalTime = workClock.getRunningTotalTime();
             totalLabel.setText(String.format("total: %s, (£%.2f)", formatTotalDuration(totalTime), asCash(totalTime)));
 
             Duration totalTimeThisMonth = workClock.getRunningTotalTimeThisMonth();
-            monthLabel.setText(String.format("this month: %s, (£%.2f)", formatTotalDuration(totalTimeThisMonth), asCash(totalTimeThisMonth)));
+            double totalThisMonthCash = asCash(totalTimeThisMonth);
+            monthLabel.setText(String.format("this month: %s, (£%.2f)", formatTotalDuration(totalTimeThisMonth), totalThisMonthCash));
+            buckets.setTotalCash(totalThisMonthCash);
+
+            List<Bucket> listOfBuckets = buckets.getBuckets();
+            for (Bucket bucket : listOfBuckets) {
+                JLabel label = bucketLabelMap.get(bucket.getName());
+                label.setText(bucket.asText());
+                if (bucket.isFull()) {
+                    label.setForeground(new Color(4, 120, 35));
+                }
+                if (bucket.isEmpty()) {
+                    label.setForeground(Color.GRAY);
+                }
+                if (!bucket.isFull() && !bucket.isEmpty()) {
+                    label.setForeground(Color.BLUE);
+                }
+            }
 
             Duration totalTimePreviousMonth = workClock.getTotalTimePreviousMonth();
             previousMonthLabel.setText(String.format("last month: %s, (£%.2f)", formatTotalDuration(totalTimePreviousMonth), asCash(totalTimePreviousMonth)));
