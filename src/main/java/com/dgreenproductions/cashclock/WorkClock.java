@@ -15,7 +15,7 @@ public class WorkClock {
         return clockedIn;
     }
 
-    private boolean clockedIn;
+    private boolean clockedIn = false;
 
     public WorkClock(Clock clock, WorkSessionLog workSessionLog) {
         this.clock = clock;
@@ -40,8 +40,7 @@ public class WorkClock {
     }
 
     public Duration getTotalTime(Instant from, Instant to) {
-        Duration timeWorked = log.getTotalTime(from , to);
-        return timeWorked;
+        return log.getTotalTime(from , to);
     }
 
     public Duration getRunningTotalTime(Instant from) {
@@ -114,13 +113,16 @@ public class WorkClock {
     public Duration getRunningTimeThisHour() {
         Instant startOfToday = clock.getCurrentTime().truncatedTo(ChronoUnit.DAYS);
         Instant startOfCurrentHour = clock.getCurrentTime().truncatedTo(ChronoUnit.HOURS);
-        Duration loggedUpToStartOfCurrentHour = log.getTotalTime(startOfToday, startOfCurrentHour);
-        Duration remainingClockableTimeInCurrentHour = Duration.ofHours(8).minus(loggedUpToStartOfCurrentHour);
-        Duration runningTotalForCurrentHour = log.getTotalTime(startOfCurrentHour, clock.getCurrentTime());
         if (clockedIn) {
+            Duration loggedUpToStartOfCurrentHour = log.getTotalTime(startOfToday, startOfCurrentHour);
+            Duration remainingClockableTimeInCurrentHour = Duration.ofHours(8).minus(loggedUpToStartOfCurrentHour);
+            // problem here
+            Duration runningTotalForCurrentHour = log.getTotalTime(startOfCurrentHour, clock.getCurrentTime());
             runningTotalForCurrentHour = runningTotalForCurrentHour.plus(Duration.between(clockInTime, clock.getCurrentTime()));
+            return minOf(remainingClockableTimeInCurrentHour, runningTotalForCurrentHour);
+        } else {
+            return log.getTotalTime(startOfCurrentHour, clock.getCurrentTime());
         }
-        return minOf(remainingClockableTimeInCurrentHour, runningTotalForCurrentHour);
     }
 
     public Duration getTotalTimeThisMinute() {

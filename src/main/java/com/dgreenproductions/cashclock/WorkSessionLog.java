@@ -80,7 +80,11 @@ public class WorkSessionLog {
 
     public Duration getTimeLoggedOnDayContaining(Instant instant) {
         Map<Instant, List<WorkSession>> byDay = sessions.stream().collect(groupingBy(s -> s.getStart().truncatedTo(ChronoUnit.DAYS)));
-        List<WorkSession> workSessions = byDay.get(instant.truncatedTo(ChronoUnit.DAYS));
-        return sum(workSessions);
+        Instant startOfToday = instant.truncatedTo(ChronoUnit.DAYS);
+        if (byDay.containsKey(startOfToday)) {
+            return sum(byDay.get(startOfToday));
+        } else {
+            return Duration.ZERO;
+        }
     }
 }

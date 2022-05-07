@@ -206,6 +206,17 @@ public class WorkClockTest {
     }
 
     @Test
+    public void getTotalTimeThisHourWrapsOnTheHour() {
+        Instant start = Instant.parse("2022-05-02T09:00:00.000Z");
+        clock.setCurrentTime(start);
+        workClock.clockIn();
+        clock.advance(Duration.ofMinutes(59).plus(Duration.ofSeconds(59)));
+        assertThat(workClock.getRunningTimeThisHour()).isEqualTo(Duration.ofMinutes(59).plus(Duration.ofSeconds(59)));
+        clock.advance(Duration.ofSeconds(1));
+        assertThat(workClock.getRunningTimeThisHour()).isEqualTo(Duration.ofHours(1));
+    }
+
+    @Test
     public void getTotalTimeThisHour() {
         Instant start = Instant.parse("2022-05-02T09:00:00.000Z");
         clock.setCurrentTime(start);
@@ -220,6 +231,25 @@ public class WorkClockTest {
 
         // total time within the hour should include 10 mins from previous session
         assertThat(workClock.getRunningTimeThisHour()).isEqualTo(Duration.ofMinutes(20));
+    }
+
+    @Test
+    public void getTotalTimeThisHourDoesNotTickUpWhenClockedOut() {
+        Instant start = Instant.parse("2022-05-02T09:00:00.000Z");
+        clock.setCurrentTime(start);
+        workClock.clockIn();
+        clock.advance(Duration.ofMinutes(30));
+        workClock.clockOut();
+        clock.advance(Duration.ofMinutes(1));
+        assertThat(workClock.getRunningTimeThisHour()).isEqualTo(Duration.ofMinutes(30));
+    }
+
+    @Test
+    public void getTotalTimeThisHourDoesNotTickUpWhenClockedOutAndNothingLoggedThisHour() {
+        Instant start = Instant.parse("2022-05-02T09:00:00.000Z");
+        clock.setCurrentTime(start);
+        clock.advance(Duration.ofMinutes(5));
+        assertThat(workClock.getRunningTimeThisHour()).isEqualTo(Duration.ZERO);
     }
 
     @Test

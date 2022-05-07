@@ -19,11 +19,35 @@ public class WorkSessionLogTest {
     }
 
     @Test
+    public void emptyLog() {
+        assertThat(timeLog.getTotalTime(Instant.now(), Instant.now())).isEqualTo(Duration.ZERO);
+    }
+
+    @Test
+    public void getTimeTodayWhenNoTimeLoggedTodayButTimeLoggedPreviousDays() {
+        Instant from = Instant.parse("2022-05-02T09:00:00.000Z");
+        Instant to = from.plus(Duration.ofMinutes(10));
+        timeLog.log(from, to);
+
+        Instant timeToday = Instant.parse("2022-05-03T09:00:00.000Z");
+
+        assertThat(timeLog.getTimeLoggedOnDayContaining(timeToday)).isEqualTo(Duration.ZERO);
+    }
+
+    @Test
     public void maxDailyIs8Hours() {
         Instant start = Instant.parse("2022-05-02T09:00:00.000Z");
         Instant end = Instant.parse("2022-05-02T18:00:00.000Z");
         timeLog.log(start, end);
         assertThat(timeLog.getTotalTime(start.truncatedTo(ChronoUnit.DAYS), end)).isEqualTo(Duration.ofHours(8));
+    }
+
+    @Test
+    public void doesNotIncludeTimeSinceMostRecentLog() {
+        Instant start = Instant.parse("2022-05-02T09:00:00.000Z");
+        Instant end = start.plus(Duration.ofMinutes(5));
+        timeLog.log(start, end);
+        assertThat(timeLog.getTotalTime(start, end.plus(Duration.ofSeconds(20)))).isEqualTo(Duration.ofMinutes(5));
     }
 
     @Test
