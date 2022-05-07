@@ -14,9 +14,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import static java.awt.BorderLayout.CENTER;
-
 public class ClockInAndOutMain {
+    private static final String CLOCK_IN_LABEL = "      Clock IN      ";
+    private static final String CLOCK_OUT_LABEL = "      Clock OUT      ";
+
 
     public static void main(String[] args) throws InterruptedException, UnsupportedLookAndFeelException, ClassNotFoundException, InstantiationException, IllegalAccessException {
         Path path = Path.of("/Users/duncangreen/WarehouseDocuments/By Company/Sky/timelog.txt");
@@ -39,17 +40,21 @@ public class ClockInAndOutMain {
         JFrame frame = new JFrame("Work Clock - DG, Sky");
         frame.setLayout(new GridBagLayout());
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(550,900);
+        frame.setSize(600,650);
 
         GridBagConstraints c = new GridBagConstraints();
         c.fill = GridBagConstraints.BOTH;
         c.weightx = c.weighty = 1.0;
 
+        JPanel topPanel = new JPanel();
+        c.gridy = 1;
+        frame.add(topPanel, c);
+
         JButton checkInOutButton = new JButton("Press");
-        c.gridy = 0;
-        frame.add(checkInOutButton, c);
+        topPanel.add(checkInOutButton);
+        checkInOutButton.setSize(400, 20);
         checkInOutButton.setFont(new Font("Serif", Font.PLAIN, 50));
-        checkInOutButton.setText("Clock IN");
+        checkInOutButton.setText(CLOCK_IN_LABEL);
         checkInOutButton.setBorderPainted(false);
         checkInOutButton.setBackground(Color.RED);
         checkInOutButton.setOpaque(true);
@@ -57,50 +62,47 @@ public class ClockInAndOutMain {
             if (workClock.isClockedIn()) {
                 System.out.println("CLOCKED OUT " + Instant.now() + " (UTC)");
                 workClock.clockOut();
-                checkInOutButton.setText("Clock IN");
+                checkInOutButton.setText(CLOCK_IN_LABEL);
                 checkInOutButton.setBackground(Color.RED);
             } else {
                 System.out.println("CLOCKED IN " + Instant.now() + " (UTC)");
                 workClock.clockIn();
-                checkInOutButton.setText("Clock OUT");
+                checkInOutButton.setText(CLOCK_OUT_LABEL);
                 checkInOutButton.setBackground(Color.GREEN);
             }
         });
 
-        JLabel totalLabel = new JLabel("Total");
-        totalLabel.setFont(new Font("Serif", Font.PLAIN, 40));
-        c.gridy = 1;
-        frame.add(totalLabel, c);
-
-        JLabel monthLabel = new JLabel("This Month");
-        monthLabel.setFont(new Font("Serif", Font.PLAIN, 40));
-        c.gridy = 2;
-        frame.add(monthLabel, c);
-
-        JPanel bucketSummaryPanel = new JPanel();
-        bucketSummaryPanel.setSize(550, 300);
-        bucketSummaryPanel.setFont(new Font("Serif", Font.PLAIN, 15));
-        bucketSummaryPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 10));
-        c.gridy = 3;
-        frame.add(bucketSummaryPanel, c);
-
-
-        JLabel previousMonthLabel = new JLabel("This Month");
-        previousMonthLabel.setFont(new Font("Serif", Font.PLAIN, 40));
-        c.gridy = 4;
-        frame.add(previousMonthLabel, c);
+        JLabel hourLabel = new JLabel("Hour");
+        hourLabel.setFont(new Font("Serif", Font.PLAIN, 40));
+        topPanel.add(hourLabel);
 
         JLabel todayLabel = new JLabel("Today");
         todayLabel.setFont(new Font("Serif", Font.PLAIN, 40));
         todayLabel.setOpaque(true);
-        c.gridy = 5;
-        frame.add(todayLabel, c);
+        topPanel.add(todayLabel);
 
-        JLabel hourLabel = new JLabel("Hour");
-        hourLabel.setFont(new Font("Serif", Font.PLAIN, 40));
-        c.gridy = 6;
-        frame.add(hourLabel, c);
+        JLabel monthLabel = new JLabel("This Month");
+        monthLabel.setFont(new Font("Serif", Font.PLAIN, 40));
+        topPanel.add(monthLabel);
 
+        JPanel bucketSummaryPanel = new JPanel();
+        bucketSummaryPanel.setSize(550, 300);
+        bucketSummaryPanel.setFont(new Font("Serif", Font.PLAIN, 15));
+        bucketSummaryPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        c.gridy = 2;
+        frame.add(bucketSummaryPanel, c);
+
+        JPanel bottomPanel = new JPanel();
+        c.gridy = 3;
+        frame.add(bottomPanel, c);
+
+        JLabel previousMonthLabel = new JLabel("This Month");
+        previousMonthLabel.setFont(new Font("Serif", Font.PLAIN, 40));
+        bottomPanel.add(previousMonthLabel);
+
+        JLabel totalLabel = new JLabel("Total");
+        totalLabel.setFont(new Font("Serif", Font.PLAIN, 40));
+        bottomPanel.add(totalLabel);
 
         Buckets buckets = new Buckets();
         buckets.add("Rent", 925);
@@ -133,7 +135,7 @@ public class ClockInAndOutMain {
 
             Duration totalTimeThisMonth = workClock.getRunningTotalTimeThisMonth();
             double totalThisMonthCash = asCash(totalTimeThisMonth);
-            monthLabel.setText(String.format("this month: %s, (£%.2f)", formatTotalDuration(totalTimeThisMonth), totalThisMonthCash));
+            monthLabel.setText(String.format("month: %s, (£%.2f)", formatTotalDuration(totalTimeThisMonth), totalThisMonthCash));
             buckets.setTotalCash(totalThisMonthCash);
 
             List<Bucket> listOfBuckets = buckets.getBuckets();
@@ -152,20 +154,20 @@ public class ClockInAndOutMain {
             }
 
             Duration totalTimePreviousMonth = workClock.getTotalTimePreviousMonth();
-            previousMonthLabel.setText(String.format("last month: %s, (£%.2f)", formatTotalDuration(totalTimePreviousMonth), asCash(totalTimePreviousMonth)));
+            previousMonthLabel.setText(String.format(" last month: %s, (£%.2f)  ", formatTotalDuration(totalTimePreviousMonth), asCash(totalTimePreviousMonth)));
 
             try {
                 Duration totalTimeToday = workClock.getRunningTotalToday();
                 if (Duration.ofHours(8).compareTo(totalTimeToday) <= 0) {
                     todayLabel.setBackground(Color.GREEN);
                 }
-                todayLabel.setText(String.format("today: %s, (£%.2f)", formatDuration(totalTimeToday), asCash(totalTimeToday)));
+                todayLabel.setText(String.format("  today: %s, (£%.2f)   ", formatDuration(totalTimeToday), asCash(totalTimeToday)));
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
             Duration totalTimeThisHour = workClock.getRunningTimeThisHour();
-            hourLabel.setText(String.format("hour: %s, (£%.2f)", formatDuration(totalTimeThisHour), asCash(totalTimeThisHour)));
+            hourLabel.setText(String.format("   hour: %s, (£%.2f)   ", formatDuration(totalTimeThisHour), asCash(totalTimeThisHour)));
         };
 
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
