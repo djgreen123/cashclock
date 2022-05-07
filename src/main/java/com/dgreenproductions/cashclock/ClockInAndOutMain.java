@@ -14,9 +14,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import static java.awt.BorderLayout.NORTH;
+import static java.awt.BorderLayout.SOUTH;
+
 public class ClockInAndOutMain {
-    private static final String CLOCK_IN_LABEL = "      Clock IN      ";
-    private static final String CLOCK_OUT_LABEL = "      Clock OUT      ";
+    private static final String CLOCK_IN_LABEL = " Clock IN ";
+    private static final String CLOCK_OUT_LABEL = " Clock OUT ";
 
 
     public static void main(String[] args) throws InterruptedException, UnsupportedLookAndFeelException, ClassNotFoundException, InstantiationException, IllegalAccessException {
@@ -38,9 +41,13 @@ public class ClockInAndOutMain {
 
         UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         JFrame frame = new JFrame("Work Clock - DG, Sky");
-        frame.setLayout(new GridBagLayout());
+        frame.setLayout(new BorderLayout());
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(600,650);
+        frame.setSize(1800,240);
+
+        JPanel outer = new JPanel(new GridBagLayout());
+        outer.setLayout(new GridBagLayout());
+        frame.add(outer, NORTH);
 
         GridBagConstraints c = new GridBagConstraints();
         c.fill = GridBagConstraints.BOTH;
@@ -48,7 +55,7 @@ public class ClockInAndOutMain {
 
         JPanel topPanel = new JPanel();
         c.gridy = 1;
-        frame.add(topPanel, c);
+        outer.add(topPanel, c);
 
         JButton checkInOutButton = new JButton("Press");
         topPanel.add(checkInOutButton);
@@ -90,11 +97,10 @@ public class ClockInAndOutMain {
         bucketSummaryPanel.setFont(new Font("Serif", Font.PLAIN, 15));
         bucketSummaryPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 10));
         c.gridy = 2;
-        frame.add(bucketSummaryPanel, c);
+        outer.add(bucketSummaryPanel, c);
 
         JPanel bottomPanel = new JPanel();
-        c.gridy = 3;
-        frame.add(bottomPanel, c);
+        frame.add(bottomPanel, SOUTH);
 
         JLabel previousMonthLabel = new JLabel("This Month");
         previousMonthLabel.setFont(new Font("Serif", Font.PLAIN, 40));
