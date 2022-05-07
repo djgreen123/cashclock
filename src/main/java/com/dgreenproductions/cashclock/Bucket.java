@@ -3,11 +3,13 @@ package com.dgreenproductions.cashclock;
 public class Bucket {
     private String name;
     private double capacity;
+    private boolean highlight;
     private double contents;
 
-    public Bucket(String name, double capacity) {
+    public Bucket(String name, double capacity, boolean highlight) {
         this.name = name;
         this.capacity = capacity;
+        this.highlight = highlight;
     }
 
     public String getName() {
@@ -27,7 +29,7 @@ public class Bucket {
     }
 
     public String asText() {
-        return String.format("%s (£%.2f)", name, contents);
+        return String.format("%s (£%.2f)", name, capacity - contents);
     }
 
     public boolean isFull() {
@@ -36,5 +38,9 @@ public class Bucket {
 
     public boolean isEmpty() {
         return contents == 0;
+    }
+
+    public boolean isHighlight() {
+        return highlight;
     }
 }

@@ -8,7 +8,11 @@ public class Buckets {
     private List<Bucket> buckets = new ArrayList<>();
 
     public void add(String bucketName, double capacity) {
-        buckets.add(new Bucket(bucketName, capacity));
+        buckets.add(new Bucket(bucketName, capacity, false));
+    }
+
+    public void addHighlight(String bucketName, double capacity) {
+        buckets.add(new Bucket(bucketName, capacity, true));
     }
 
     public double get(String bucketName) {
