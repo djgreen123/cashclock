@@ -3,8 +3,10 @@ package com.dgreenproductions.cashclock;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,6 +26,33 @@ public class WorkClockTest {
         log = new WorkSessionLog();
         workClock = new WorkClock(clock, log);
     }
+
+    @Test
+    public void thisMondayDailySummaryTicksUpDuringMonday() {
+        // 9th of May is Monday
+        Instant monday = Instant.parse("2022-05-09T09:00:00.000Z");
+        clock.setCurrentTime(monday);
+        workClock.clockIn();
+        clock.advance(Duration.ofMinutes(12));
+        assertThat(workClock.getThisWeeksRunningTotal(DayOfWeek.MONDAY)).isEqualTo(Duration.ofMinutes(12));
+    }
+
+//    @Test
+//    public void thisMondayDailySummaryDoesNotTickUpOnTuesday() {
+//        // 9th of May is Monday
+//        Instant monday = Instant.parse("2022-05-09T09:00:00.000Z");
+//        clock.setCurrentTime(monday);
+//        workClock.clockIn();
+//        clock.advance(Duration.ofMinutes(12));
+//        workClock.clockOut();
+//
+//        Instant tuesday = Instant.parse("2022-05-10T09:00:00.000Z");
+//        clock.setCurrentTime(tuesday);
+//        workClock.clockIn();
+//        clock.advance(Duration.ofHours(2));
+//        workClock.clockOut();
+//        assertThat(workClock.getThisWeeksRunningTotal(DayOfWeek.TUESDAY)).isEqualTo(Duration.ofMinutes(12));
+//    }
 
     @Test
     public void notifiedOfSessionOnClockOut() {

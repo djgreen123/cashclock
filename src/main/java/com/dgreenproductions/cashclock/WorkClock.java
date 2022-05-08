@@ -133,4 +133,10 @@ public class WorkClock {
     public void addListener(SessionListener listener) {
         listeners.add(listener);
     }
+
+    public Duration getThisWeeksRunningTotal(DayOfWeek dayOfWeek) {
+//        Instant startOfDay = new DaysOfWeek().;
+
+        return getRunningTotalToday();
+    }
 }
