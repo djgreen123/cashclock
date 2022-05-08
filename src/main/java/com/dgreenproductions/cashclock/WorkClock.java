@@ -116,7 +116,6 @@ public class WorkClock {
         if (clockedIn) {
             Duration loggedUpToStartOfCurrentHour = log.getTotalTime(startOfToday, startOfCurrentHour);
             Duration remainingClockableTimeInCurrentHour = Duration.ofHours(8).minus(loggedUpToStartOfCurrentHour);
-            // problem here
             Duration runningTotalForCurrentHour = log.getTotalTime(startOfCurrentHour, clock.getCurrentTime());
             runningTotalForCurrentHour = runningTotalForCurrentHour.plus(Duration.between(clockInTime, clock.getCurrentTime()));
             return minOf(remainingClockableTimeInCurrentHour, runningTotalForCurrentHour);
@@ -135,8 +134,16 @@ public class WorkClock {
     }
 
     public Duration getThisWeeksRunningTotal(DayOfWeek dayOfWeek) {
-//        Instant startOfDay = new DaysOfWeek().;
-
-        return getRunningTotalToday();
+        Instant now = clock.getCurrentTime();
+        Week currentWeek = Week.containing(now);
+        Instant startOfDay = currentWeek.getStartOf(dayOfWeek).truncatedTo(ChronoUnit.DAYS);
+        Instant endOfDay = startOfDay.plus(Duration.ofHours(23).plus(Duration.ofMinutes(59)).plus(Duration.ofSeconds(59)));
+        Duration total = log.getTotalTime(startOfDay, endOfDay);
+        if (now.compareTo(startOfDay) >= 0 && now.compareTo(endOfDay) <= 0) {
+            if (clockedIn) {
+                total = total.plus(Duration.between(clockInTime, now));
+            }
+        }
+        return total;
     }
 }
