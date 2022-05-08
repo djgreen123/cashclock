@@ -27,7 +27,7 @@ public class Week {
         return current;
     }
 
-    private static DayOfWeek dayOfWeek(Instant instant) {
+    public static DayOfWeek dayOfWeek(Instant instant) {
         return LocalDateTime.ofInstant(instant, ZoneOffset.UTC).getDayOfWeek();
     }
     public Instant getStartOfWeek() {
