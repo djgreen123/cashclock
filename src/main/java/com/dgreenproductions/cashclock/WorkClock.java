@@ -117,7 +117,8 @@ public class WorkClock {
             Duration loggedUpToStartOfCurrentHour = log.getTotalTime(startOfToday, startOfCurrentHour);
             Duration remainingClockableTimeInCurrentHour = Duration.ofHours(8).minus(loggedUpToStartOfCurrentHour);
             Duration runningTotalForCurrentHour = log.getTotalTime(startOfCurrentHour, clock.getCurrentTime());
-            runningTotalForCurrentHour = runningTotalForCurrentHour.plus(Duration.between(clockInTime, clock.getCurrentTime()));
+            runningTotalForCurrentHour = runningTotalForCurrentHour.plus(
+                    Duration.between(latestOf(clockInTime, startOfCurrentHour), clock.getCurrentTime()));
             return minOf(remainingClockableTimeInCurrentHour, runningTotalForCurrentHour);
         } else {
             return log.getTotalTime(startOfCurrentHour, clock.getCurrentTime());
@@ -133,7 +134,7 @@ public class WorkClock {
         listeners.add(listener);
     }
 
-    public Duration getThisWeeksRunningTotal(DayOfWeek dayOfWeek) {
+    public Duration getDayRunningTotal(DayOfWeek dayOfWeek) {
         Instant now = clock.getCurrentTime();
         Week currentWeek = Week.containing(now);
         Instant startOfDay = currentWeek.getStartOf(dayOfWeek).truncatedTo(ChronoUnit.DAYS);
@@ -144,6 +145,6 @@ public class WorkClock {
                 total = total.plus(Duration.between(clockInTime, now));
             }
         }
-        return total;
+        return minOf(total, Duration.ofHours(8));
     }
 }

@@ -19,10 +19,9 @@ import static com.dgreenproductions.cashclock.Week.dayOfWeek;
 import static java.awt.BorderLayout.NORTH;
 import static java.awt.BorderLayout.SOUTH;
 import static java.awt.Color.BLUE;
-import static java.awt.Color.GRAY;
 
 public class ClockInAndOutMain {
-    private static final int LARGE_TEXT_SIZE = 30;
+    private static final int LARGE_TEXT_SIZE = 26;
     private static final int MEDIUM_TEXT_SIZE = 18;
     private static final int SMALL_TEXT_SIZE = 10;
 
@@ -37,7 +36,7 @@ public class ClockInAndOutMain {
     public static void main(String[] args) throws InterruptedException, UnsupportedLookAndFeelException, ClassNotFoundException, InstantiationException, IllegalAccessException {
         Path path = Path.of("/Users/duncangreen/WarehouseDocuments/By Company/Sky/timelog.txt");
 
-        System.out.println("Work Tracker running...");
+        System.out.println("Cash Clock running...");
 
         WorkSessionLog workSessionLog = new WorkSessionLog();
         if (Files.exists(path)) {
@@ -53,10 +52,10 @@ public class ClockInAndOutMain {
         workClock.addListener(listener);
 
         UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        JFrame frame = new JFrame("Work Clock - DG, Sky");
+        JFrame frame = new JFrame("Cash Clock - DG, Sky");
         frame.setLayout(new BorderLayout());
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(1500,230);
+        frame.setSize(1500,280);
 
         frame.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent evt) {
@@ -111,24 +110,29 @@ public class ClockInAndOutMain {
         todayLabel.setFont(new Font("Serif", Font.PLAIN, LARGE_TEXT_SIZE));
         todayLabel.setOpaque(true);
         topPanel.add(todayLabel);
+        Color todayLabelColor = todayLabel.getBackground();
 
         JLabel monthLabel = new JLabel("This Month");
         monthLabel.setFont(new Font("Serif", Font.PLAIN, LARGE_TEXT_SIZE));
         topPanel.add(monthLabel);
 
         JPanel bucketSummaryPanel1 = new JPanel();
-        bucketSummaryPanel1.setSize(550, 300);
         bucketSummaryPanel1.setFont(new Font("Serif", Font.PLAIN, SMALL_TEXT_SIZE));
         bucketSummaryPanel1.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 10));
         c.gridy = 2;
         outer.add(bucketSummaryPanel1, c);
 
         JPanel bucketSummaryPanel2 = new JPanel();
-        bucketSummaryPanel2.setSize(550, 300);
         bucketSummaryPanel2.setFont(new Font("Serif", Font.PLAIN, SMALL_TEXT_SIZE));
         bucketSummaryPanel2.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 10));
         c.gridy = 3;
         outer.add(bucketSummaryPanel2, c);
+
+        JPanel bucketSummaryPanel3 = new JPanel();
+        bucketSummaryPanel3.setFont(new Font("Serif", Font.PLAIN, SMALL_TEXT_SIZE));
+        bucketSummaryPanel3.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        c.gridy = 4;
+        outer.add(bucketSummaryPanel3, c);
 
         JPanel bottomPanel = new JPanel(new GridBagLayout());
         frame.add(bottomPanel, SOUTH);
@@ -187,7 +191,6 @@ public class ClockInAndOutMain {
         otherSummaryPanel.add(contractLabel);
 
 
-
         Buckets buckets = new Buckets();
         buckets.add("Rent", 925);
         buckets.addHighlight("After Eight Dark Chocolate Mints", 1.99);
@@ -195,14 +198,15 @@ public class ClockInAndOutMain {
         buckets.add("Gas & Electric", 60);
         buckets.add("Water", 20);
         buckets.add("Council Tax", 116);
+        buckets.add("Car tax", 200 / 12.0);
         buckets.add("Storage", 112.20);
         buckets.add("Pension", 1500);
-        buckets.addHighlight("Hue Play Bar", 119.99);
+        buckets.addHighlight("Atlas Suspension Headrest", 187.39);
         buckets.add("Holiday", 200);
-        buckets.add("Car tax", 200 / 12.0);
         buckets.addHighlight("Carol Anne Dark Chocolate Brazil Nuts", 8.99);
         buckets.add("Car wash", 17);
         buckets.add("Car servicing", 500 / 12.0);
+        buckets.addHighlight("Snoopy Red Doormat (see wishlist)", 28.16);
         buckets.add("NOW TV", 35);
         buckets.add("Netflix", 9.99);
         buckets.add("Savings", 4000);
@@ -212,14 +216,20 @@ public class ClockInAndOutMain {
         Map<String, JLabel> bucketLabelMap = new HashMap<>();
         List<Bucket> bucketList = buckets.getBuckets();
         int bucketCount = 0;
+        int groupSize = bucketList.size() / 3;
+
         for (Bucket bucket : bucketList) {
             JLabel bucketLabel = new JLabel(bucket.getName());
             bucketLabel.setOpaque(true);
             bucketLabel.setFont(new Font("Default", Font.PLAIN, SMALL_TEXT_SIZE));
-            if (bucketCount < bucketList.size() / 2) {
+            if (bucketCount < groupSize) {
                 bucketSummaryPanel1.add(bucketLabel);
             } else {
-                bucketSummaryPanel2.add(bucketLabel);
+                if (bucketCount >= groupSize && bucketCount < 2 * groupSize ) {
+                    bucketSummaryPanel2.add(bucketLabel);
+                } else {
+                    bucketSummaryPanel3.add(bucketLabel);
+                }
             }
             bucketCount++;
             bucketLabelMap.put(bucket.getName(), bucketLabel);
@@ -268,8 +278,17 @@ public class ClockInAndOutMain {
                 Duration totalTimeToday = workClock.getRunningTotalToday();
                 if (Duration.ofHours(8).compareTo(totalTimeToday) <= 0) {
                     todayLabel.setBackground(Color.GREEN);
+                } else {
+                    todayLabel.setBackground(todayLabelColor);
                 }
-                todayLabel.setText(String.format("  today: %s, (£%,.2f)", formatDuration(totalTimeToday), asCash(totalTimeToday)));
+                double percentTodayWorked = (double)totalTimeToday.toMillis() / Duration.ofHours(8).toMillis() * 100.0;
+                todayLabel.setText(String.format("  today: %s (%.1f%%), (£%,.2f)", formatDuration(totalTimeToday), percentTodayWorked, asCash(totalTimeToday)));
+
+                if (percentTodayWorked >= 80) {
+                    outer.setBackground(Color.PINK);
+                } else {
+                    outer.setBackground(todayLabelColor);
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -305,7 +324,7 @@ public class ClockInAndOutMain {
     }
 
     private static void setDaySummary(WorkClock workClock, Clock clock, DayOfWeek dayOfWeek, JLabel label, String dayText) {
-        Duration duration = workClock.getThisWeeksRunningTotal(dayOfWeek);
+        Duration duration = workClock.getDayRunningTotal(dayOfWeek);
         if (dayOfWeek(clock.getCurrentTime()) == dayOfWeek) {
             label.setForeground(BLUE);
         } else {
@@ -330,8 +349,8 @@ public class ClockInAndOutMain {
     }
 
     private static String formatTotalDuration(Duration duration) {
-        long hours = duration.toHours();
-        return String.format("%.2f days", hours / 8.0);
+        double percentTodayWorked = (double)duration.toMillis() / Duration.ofHours(8).toMillis();
+        return String.format("%.2f days", percentTodayWorked);
     }
 
     private static String formatDuration(Duration duration) {

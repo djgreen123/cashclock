@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,13 +27,22 @@ public class WorkClockTest {
     }
 
     @Test
+    public void runningTotalResetsOnTheHourWhilstClockedIn() {
+        Instant monday = Instant.parse("2022-05-09T09:35:00.000Z");
+        clock.setCurrentTime(monday);
+        workClock.clockIn();
+        clock.advance(Duration.ofMinutes(25));
+        assertThat(workClock.getRunningTimeThisHour()).isEqualTo(Duration.ZERO);
+    }
+
+    @Test
     public void thisMondayDailySummaryTicksUpDuringMonday() {
         // 9th of May is Monday
         Instant monday = Instant.parse("2022-05-09T09:00:00.000Z");
         clock.setCurrentTime(monday);
         workClock.clockIn();
         clock.advance(Duration.ofMinutes(12));
-        assertThat(workClock.getThisWeeksRunningTotal(DayOfWeek.MONDAY)).isEqualTo(Duration.ofMinutes(12));
+        assertThat(workClock.getDayRunningTotal(DayOfWeek.MONDAY)).isEqualTo(Duration.ofMinutes(12));
     }
 
     @Test
@@ -51,7 +59,7 @@ public class WorkClockTest {
         workClock.clockIn();
         clock.advance(Duration.ofHours(2));
         workClock.clockOut();
-        assertThat(workClock.getThisWeeksRunningTotal(DayOfWeek.MONDAY)).isEqualTo(Duration.ofMinutes(12));
+        assertThat(workClock.getDayRunningTotal(DayOfWeek.MONDAY)).isEqualTo(Duration.ofMinutes(12));
     }
 
     @Test
@@ -242,7 +250,7 @@ public class WorkClockTest {
         clock.advance(Duration.ofMinutes(59).plus(Duration.ofSeconds(59)));
         assertThat(workClock.getRunningTimeThisHour()).isEqualTo(Duration.ofMinutes(59).plus(Duration.ofSeconds(59)));
         clock.advance(Duration.ofSeconds(1));
-        assertThat(workClock.getRunningTimeThisHour()).isEqualTo(Duration.ofHours(1));
+        assertThat(workClock.getRunningTimeThisHour()).isEqualTo(Duration.ZERO);
     }
 
     @Test
