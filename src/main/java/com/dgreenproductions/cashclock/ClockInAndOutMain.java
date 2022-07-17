@@ -1,14 +1,18 @@
 package com.dgreenproductions.cashclock;
 
+import org.apache.commons.io.FileUtils;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.DayOfWeek;
-import java.time.Duration;
-import java.time.Instant;
+import java.time.*;
+import java.time.format.TextStyle;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -190,10 +194,45 @@ public class ClockInAndOutMain {
         contractLabel.setOpaque(true);
         otherSummaryPanel.add(contractLabel);
 
+        JLabel perMonthLabel = new JLabel("Per Month");
+        perMonthLabel.setFont(new Font("Serif", Font.PLAIN, MEDIUM_TEXT_SIZE));
+        perMonthLabel.setOpaque(true);
+        otherSummaryPanel.add(perMonthLabel);
+        perMonthLabel.setText(String.format("£/m £%,.2f  ", netPerMonth));
+
+        JLabel perWeekLabel = new JLabel("Per Week");
+        perWeekLabel.setFont(new Font("Serif", Font.PLAIN, MEDIUM_TEXT_SIZE));
+        perWeekLabel.setOpaque(true);
+        otherSummaryPanel.add(perWeekLabel);
+        perWeekLabel.setText(String.format("£/wk £%,.2f  ", netPerWeek));
+
+        JLabel perDayLabel = new JLabel("Per Day");
+        perDayLabel.setFont(new Font("Serif", Font.PLAIN, MEDIUM_TEXT_SIZE));
+        perDayLabel.setOpaque(true);
+        otherSummaryPanel.add(perDayLabel);
+        perDayLabel.setText(String.format("£/d £%,.2f  ", netPerDay));
+
+        JLabel perHourLabel = new JLabel("Per Hour");
+        perHourLabel.setFont(new Font("Serif", Font.PLAIN, MEDIUM_TEXT_SIZE));
+        perHourLabel.setOpaque(true);
+        otherSummaryPanel.add(perHourLabel);
+        perHourLabel.setText(String.format("£/hr £%,.2f  ", netPerHour));
+
+        JLabel perMinuteLabel = new JLabel("Per Minute");
+        perMinuteLabel.setFont(new Font("Serif", Font.PLAIN, MEDIUM_TEXT_SIZE));
+        perMinuteLabel.setOpaque(true);
+        otherSummaryPanel.add(perMinuteLabel);
+        perMinuteLabel.setText(String.format("£/m £%,.3f ", netPerMinute));
+
+        JLabel perSecondLabel = new JLabel("Per Second");
+        perSecondLabel.setFont(new Font("Serif", Font.PLAIN, MEDIUM_TEXT_SIZE));
+        perSecondLabel.setOpaque(true);
+        otherSummaryPanel.add(perSecondLabel);
+        perSecondLabel.setText(String.format("£/s £%,.4f", netPerSecond));
 
         Buckets buckets = new Buckets();
         buckets.add("Rent", 925);
-        buckets.addHighlight("After Eight Dark Chocolate Mints", 1.99);
+        buckets.addHighlight("Carol Anne Dark Chocolate Brazil Nuts", 8.99);
         buckets.add("Food", 250);
         buckets.add("Gas & Electric", 60);
         buckets.add("Water", 20);
@@ -201,17 +240,14 @@ public class ClockInAndOutMain {
         buckets.add("Car tax", 200 / 12.0);
         buckets.add("Storage", 112.20);
         buckets.add("Pension", 1500);
-        buckets.addHighlight("Atlas Suspension Headrest", 187.39);
+        buckets.addHighlight("Horizon Forbidden West", 69.99);
         buckets.add("Holiday", 200);
-        buckets.addHighlight("Carol Anne Dark Chocolate Brazil Nuts", 8.99);
         buckets.add("Car wash", 17);
         buckets.add("Car servicing", 500 / 12.0);
-        buckets.addHighlight("Snoopy Red Doormat (see wishlist)", 28.16);
-        buckets.add("NOW TV", 35);
         buckets.add("Netflix", 9.99);
         buckets.add("Savings", 4000);
         buckets.addHighlight("Kampa Kielder 4 Air Tent", 599.99);
-        buckets.add("Entertainment", 10000);
+        buckets.add("Remainder", 10000);
 
         Map<String, JLabel> bucketLabelMap = new HashMap<>();
         List<Bucket> bucketList = buckets.getBuckets();
@@ -235,9 +271,31 @@ public class ClockInAndOutMain {
             bucketLabelMap.put(bucket.getName(), bucketLabel);
         }
 
+        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+
+        Runnable updateEveryMinute = () -> {
+            List<String> lines = new ArrayList<>();
+            for (Bucket bucket : bucketList) {
+                lines.add(String.format("%s, £%,.2f, £%,.2f", bucket.getName(), bucket.getContents(), bucket.getCapacity()));
+            }
+
+            // write buckets to file
+            LocalDateTime localNow = LocalDateTime.ofInstant(clock.getCurrentTime(), ZoneOffset.UTC);
+            Month month = localNow.getMonth();
+            Integer year = localNow.getYear();
+            Path bucketPath = Path.of(String.format("/Users/duncangreen/WarehouseDocuments/By Company/Sky/%s-%d.txt", month.getDisplayName(TextStyle.SHORT, Locale.UK), year));
+            try {
+                FileUtils.writeLines(bucketPath.toFile(), "UTF8", lines, false);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        };
+
+        executor.scheduleAtFixedRate(updateEveryMinute, 1, 1, TimeUnit.MINUTES);
+
         Runnable updateEverySecond = () -> {
             Duration totalTime = workClock.getRunningTotalTime();
-            contractLabel.setText(String.format("  contract: %s, (£%,.2f) ", formatTotalDuration(totalTime), asCash(totalTime)));
+            contractLabel.setText(String.format("  contract: %s, () ", formatTotalDuration(totalTime), asCash(totalTime)));
 
             Duration totalTimeThisMonth = workClock.getRunningTotalTimeThisMonth();
             double totalThisMonthCash = asCash(totalTimeThisMonth);
@@ -298,7 +356,6 @@ public class ClockInAndOutMain {
             lastHourlyUpdate = Optional.of(Instant.now());
         };
 
-        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
         executor.scheduleAtFixedRate(updateEverySecond, 1, 1, TimeUnit.SECONDS);
 
         Runnable updateEvery10Millis = () -> {
@@ -338,10 +395,13 @@ public class ClockInAndOutMain {
     }
 
     private static double grossPerDay = 750;
-    private static double conversion = 0.5412;
+    private static double conversion = 0.548295;
     private static double netPerDay = grossPerDay * conversion;
+    private static double netPerWeek = netPerDay * 5;
+    private static double netPerMonth = netPerWeek * 46 / 12.0;
     private static double netPerHour = netPerDay / 8.0;
-    private static double netPerSecond = netPerHour / 3600.0;
+    private static double netPerMinute = netPerHour / 60.0;
+    private static double netPerSecond = netPerMinute / 60.0;
     private static double netPerMillisecond = netPerSecond / 1000;
 
     private static double asCash(Duration duration) {
