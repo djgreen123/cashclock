@@ -184,6 +184,11 @@ public class ClockInAndOutMain {
         JPanel otherSummaryPanel = new JPanel();
         bottomPanel.add(otherSummaryPanel, c);
 
+        JLabel thisWeekLabel = new JLabel("This Week");
+        thisWeekLabel.setFont(new Font("Serif", Font.PLAIN, MEDIUM_TEXT_SIZE));
+        thisWeekLabel.setOpaque(true);
+        otherSummaryPanel.add(thisWeekLabel);
+
         JLabel previousMonthLabel = new JLabel("Last Month");
         previousMonthLabel.setFont(new Font("Serif", Font.PLAIN, MEDIUM_TEXT_SIZE));
         previousMonthLabel.setOpaque(true);
@@ -309,6 +314,7 @@ public class ClockInAndOutMain {
             setDaySummary(workClock, clock, DayOfWeek.SATURDAY, saturdayLabel, "sat");
             setDaySummary(workClock, clock, DayOfWeek.SUNDAY, sundayLabel, "sun");
 
+            setWeekSummary(workClock, clock, thisWeekLabel);
 
             buckets.setTotalCash(totalThisMonthCash);
             List<Bucket> listOfBuckets = buckets.getBuckets();
@@ -393,6 +399,23 @@ public class ClockInAndOutMain {
         }
         label.setText(String.format("%s: %s, (£%,.2f)  ", dayText, formatTotalDuration(duration), asCash(duration)));
     }
+
+    private static void setWeekSummary(WorkClock workClock, Clock clock, JLabel label) {
+        Duration duration = workClock.getWeekRunningTotal();
+        Instant now = clock.getCurrentTime();
+        Week currentWeek = Week.containing(now);
+        Instant startOfMonday = currentWeek.getStartOf(DayOfWeek.MONDAY).truncatedTo(ChronoUnit.DAYS);
+        long numDays = Duration.between(startOfMonday, now).toDays();
+        Duration expectedHours = Duration.ofHours(numDays * 8L);
+
+        if (duration.compareTo(expectedHours) >= 0) {
+            label.setForeground(DARK_GREEN);
+        } else {
+            label.setForeground(Color.RED);
+        }
+        label.setText(String.format("this week: %s, (£%,.2f)  ", formatTotalDuration(duration), asCash(duration)));
+    }
+
 
     private static double grossPerDay = 750;
     private static double conversion = 0.548295;

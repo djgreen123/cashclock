@@ -147,4 +147,16 @@ public class WorkClock {
         }
         return minOf(total, Duration.ofHours(8));
     }
+
+    public Duration getWeekRunningTotal() {
+        Instant now = clock.getCurrentTime();
+        Week currentWeek = Week.containing(now);
+        Instant startOfWeek = currentWeek.getStartOfWeek().truncatedTo(ChronoUnit.DAYS);
+        Duration total = log.getTotalTime(startOfWeek, now);
+        if (clockedIn) {
+            total = total.plus(Duration.between(clockInTime, now));
+        }
+        return total;
+    }
+
 }
