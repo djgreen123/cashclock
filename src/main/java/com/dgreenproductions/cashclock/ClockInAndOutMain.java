@@ -12,7 +12,6 @@ import java.nio.file.Path;
 import java.time.*;
 import java.time.format.TextStyle;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -300,11 +299,11 @@ public class ClockInAndOutMain {
 
         Runnable updateEverySecond = () -> {
             Duration totalTime = workClock.getRunningTotalTime();
-            contractLabel.setText(String.format("  contract: %s, () ", formatTotalDuration(totalTime), asCash(totalTime)));
+            contractLabel.setText(String.format("  contract: %s, () ", DurationFormats.formatTotalDuration(totalTime), asCash(totalTime)));
 
             Duration totalTimeThisMonth = workClock.getRunningTotalTimeThisMonth();
             double totalThisMonthCash = asCash(totalTimeThisMonth);
-            monthLabel.setText(String.format("  month: %s, (£%,.2f)", formatTotalDuration(totalTimeThisMonth), totalThisMonthCash));
+            monthLabel.setText(String.format("  month: %s, (£%,.2f)", DurationFormats.formatTotalDuration(totalTimeThisMonth), totalThisMonthCash));
 
             setDaySummary(workClock, clock, DayOfWeek.MONDAY, mondayLabel, "mon");
             setDaySummary(workClock, clock, DayOfWeek.TUESDAY, tuesdayLabel, "tue");
@@ -336,7 +335,7 @@ public class ClockInAndOutMain {
             }
 
             Duration totalTimePreviousMonth = workClock.getTotalTimePreviousMonth();
-            previousMonthLabel.setText(String.format("last month: %s, (£%,.2f) ", formatTotalDuration(totalTimePreviousMonth), asCash(totalTimePreviousMonth)));
+            previousMonthLabel.setText(String.format("last month: %s, (£%,.2f) ", DurationFormats.formatTotalDuration(totalTimePreviousMonth), asCash(totalTimePreviousMonth)));
 
             try {
                 Duration totalTimeToday = workClock.getRunningTotalToday();
@@ -346,7 +345,7 @@ public class ClockInAndOutMain {
                     todayLabel.setBackground(todayLabelColor);
                 }
                 double percentTodayWorked = (double)totalTimeToday.toMillis() / Duration.ofHours(8).toMillis() * 100.0;
-                todayLabel.setText(String.format("  today: %s (%.1f%%), (£%,.2f)", formatDuration(totalTimeToday), percentTodayWorked, asCash(totalTimeToday)));
+                todayLabel.setText(String.format("  today: %s (%.1f%%), (£%,.2f)", DurationFormats.formatDuration(totalTimeToday), percentTodayWorked, asCash(totalTimeToday)));
 
                 if (percentTodayWorked >= 80) {
                     outer.setBackground(Color.PINK);
@@ -373,7 +372,7 @@ public class ClockInAndOutMain {
                     total = total.plus(sinceLastHourlyUpdate);
                     cash = cash + sinceLastHourlyUpdate.toMillis() * netPerMillisecond;
                 }
-                hourLabel.setText(String.format("   hour: %s, (£%,.4f)", formatHourlyDuration(total), cash));
+                hourLabel.setText(String.format("   hour: %s, (£%,.4f)", DurationFormats.formatHourlyDuration(total), cash));
             } else {
                 hourLabel.setText("   hour: 0s, (£0.0000)");
             }
@@ -397,7 +396,7 @@ public class ClockInAndOutMain {
                 label.setForeground(Color.GRAY);
             }
         }
-        label.setText(String.format("%s: %s, (£%,.2f)  ", dayText, formatTotalDuration(duration), asCash(duration)));
+        label.setText(String.format("%s: %s, (£%,.2f)  ", dayText, DurationFormats.formatTotalDuration(duration), asCash(duration)));
     }
 
     private static void setWeekSummary(WorkClock workClock, Clock clock, JLabel label) {
@@ -413,7 +412,7 @@ public class ClockInAndOutMain {
         } else {
             label.setForeground(Color.RED);
         }
-        label.setText(String.format("this week: %s, (£%,.2f)  ", formatTotalDuration(duration), asCash(duration)));
+        label.setText(String.format("this week: %s %s, (£%,.2f)", DurationFormats.formatTotalDuration(duration.abs()), DurationFormats.formatDuration(duration.minus(expectedHours)), asCash(duration)));
     }
 
 
@@ -431,36 +430,4 @@ public class ClockInAndOutMain {
         return duration.toSeconds() * netPerSecond;
     }
 
-    private static String formatTotalDuration(Duration duration) {
-        double percentTodayWorked = (double)duration.toMillis() / Duration.ofHours(8).toMillis();
-        return String.format("%.2f days", percentTodayWorked);
-    }
-
-    private static String formatDuration(Duration duration) {
-        String asString = "";
-        if (duration.compareTo(Duration.ofDays(1).minus(Duration.ofSeconds(1))) > 0) {
-            asString = asString + String.format("%sd", duration.toDaysPart());
-        }
-        if (duration.compareTo(Duration.ofHours(1).minus(Duration.ofSeconds(1))) > 0) {
-            asString = asString + String.format(" %sh", duration.toHoursPart());
-        }
-        if (duration.compareTo(Duration.ofMinutes(1).minus(Duration.ofSeconds(1))) > 0) {
-            asString = asString + String.format(" %sm", duration.toMinutesPart());
-        }
-        asString = asString + String.format(" %ss",
-                duration.toSecondsPart());
-
-        return asString;
-    }
-
-    private static String formatHourlyDuration(Duration duration) {
-        String asString = "";
-        if (duration.compareTo(Duration.ofMinutes(1).minus(Duration.ofSeconds(1))) > 0) {
-            asString = asString + String.format(" %sm", duration.toMinutesPart());
-        }
-        asString = asString + String.format(" %ss %03dms",
-                duration.toSecondsPart(), duration.toMillisPart());
-
-        return asString;
-    }
 }
