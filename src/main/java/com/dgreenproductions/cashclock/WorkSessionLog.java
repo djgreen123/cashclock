@@ -27,6 +27,12 @@ public class WorkSessionLog {
         return sumOf(clippedEntries);
     }
 
+    public Duration getTotalTimeUnclipped(Instant from, Instant to) {
+        List<WorkSession> intersectingEntries = sessions.stream().filter(e -> intervalIntersectsWindow(e, from, to)).collect(Collectors.toList());
+        List<WorkSession> clippedEntries = intersectingEntries.stream().map(e -> clip(e, from, to)).collect(Collectors.toList());
+        return sumOfUnclipped(clippedEntries);
+    }
+
     private boolean intervalIntersectsWindow(WorkSession WorkSession, Instant windowStart, Instant windowEnd) {
         return !intervalIsOutsideWindow(WorkSession, windowStart, windowEnd);
     }
@@ -46,7 +52,21 @@ public class WorkSessionLog {
             for (WorkSession dailySession : dailySessions) {
                 dailyTotal = dailyTotal.plus(dailySession.getDuration());
             }
-            total = total.plus(minOf(dailyTotal, Duration.ofHours(8)));
+            total = total.plus(dailyTotal);
+        }
+        return total;
+    }
+
+    private Duration sumOfUnclipped(List<WorkSession> entries) {
+        Duration total = Duration.ZERO;
+        Map<Instant, List<WorkSession>> byDay = entries.stream().collect(groupingBy(s -> s.getStart().truncatedTo(ChronoUnit.DAYS)));
+        for (Instant startOfDay : byDay.keySet()) {
+            Duration dailyTotal = Duration.ZERO;
+            List<WorkSession> dailySessions = byDay.get(startOfDay);
+            for (WorkSession dailySession : dailySessions) {
+                dailyTotal = dailyTotal.plus(dailySession.getDuration());
+            }
+            total = total.plus(dailyTotal);
         }
         return total;
     }

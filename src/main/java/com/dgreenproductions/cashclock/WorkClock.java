@@ -145,14 +145,15 @@ public class WorkClock {
                 total = total.plus(Duration.between(clockInTime, now));
             }
         }
-        return minOf(total, Duration.ofHours(8));
+        return total;
+//        return minOf(total, Duration.ofHours(8));
     }
 
     public Duration getWeekRunningTotal() {
         Instant now = clock.getCurrentTime();
         Week currentWeek = Week.containing(now);
         Instant startOfWeek = currentWeek.getStartOfWeek().truncatedTo(ChronoUnit.DAYS);
-        Duration total = log.getTotalTime(startOfWeek, now);
+        Duration total = log.getTotalTimeUnclipped(startOfWeek, now);
         if (clockedIn) {
             total = total.plus(Duration.between(clockInTime, now));
         }

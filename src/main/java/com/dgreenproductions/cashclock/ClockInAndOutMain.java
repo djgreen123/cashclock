@@ -1,19 +1,14 @@
 package com.dgreenproductions.cashclock;
 
-import org.apache.commons.io.FileUtils;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.*;
-import java.time.format.TextStyle;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -58,7 +53,7 @@ public class ClockInAndOutMain {
         JFrame frame = new JFrame("Cash Clock - DG, Sky");
         frame.setLayout(new BorderLayout());
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(1500,280);
+        frame.setSize(1500,150);
 
         frame.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent evt) {
@@ -119,23 +114,23 @@ public class ClockInAndOutMain {
         monthLabel.setFont(new Font("Serif", Font.PLAIN, LARGE_TEXT_SIZE));
         topPanel.add(monthLabel);
 
-        JPanel bucketSummaryPanel1 = new JPanel();
-        bucketSummaryPanel1.setFont(new Font("Serif", Font.PLAIN, SMALL_TEXT_SIZE));
-        bucketSummaryPanel1.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 10));
-        c.gridy = 2;
-        outer.add(bucketSummaryPanel1, c);
-
-        JPanel bucketSummaryPanel2 = new JPanel();
-        bucketSummaryPanel2.setFont(new Font("Serif", Font.PLAIN, SMALL_TEXT_SIZE));
-        bucketSummaryPanel2.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 10));
-        c.gridy = 3;
-        outer.add(bucketSummaryPanel2, c);
-
-        JPanel bucketSummaryPanel3 = new JPanel();
-        bucketSummaryPanel3.setFont(new Font("Serif", Font.PLAIN, SMALL_TEXT_SIZE));
-        bucketSummaryPanel3.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 10));
-        c.gridy = 4;
-        outer.add(bucketSummaryPanel3, c);
+//        JPanel bucketSummaryPanel1 = new JPanel();
+//        bucketSummaryPanel1.setFont(new Font("Serif", Font.PLAIN, SMALL_TEXT_SIZE));
+//        bucketSummaryPanel1.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 10));
+//        c.gridy = 2;
+//        outer.add(bucketSummaryPanel1, c);
+//
+//        JPanel bucketSummaryPanel2 = new JPanel();
+//        bucketSummaryPanel2.setFont(new Font("Serif", Font.PLAIN, SMALL_TEXT_SIZE));
+//        bucketSummaryPanel2.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 10));
+//        c.gridy = 3;
+//        outer.add(bucketSummaryPanel2, c);
+//
+//        JPanel bucketSummaryPanel3 = new JPanel();
+//        bucketSummaryPanel3.setFont(new Font("Serif", Font.PLAIN, SMALL_TEXT_SIZE));
+//        bucketSummaryPanel3.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 10));
+//        c.gridy = 4;
+//        outer.add(bucketSummaryPanel3, c);
 
         JPanel bottomPanel = new JPanel(new GridBagLayout());
         frame.add(bottomPanel, SOUTH);
@@ -253,49 +248,49 @@ public class ClockInAndOutMain {
         buckets.addHighlight("Kampa Kielder 4 Air Tent", 599.99);
         buckets.add("Remainder", 10000);
 
-        Map<String, JLabel> bucketLabelMap = new HashMap<>();
-        List<Bucket> bucketList = buckets.getBuckets();
-        int bucketCount = 0;
-        int groupSize = bucketList.size() / 3;
-
-        for (Bucket bucket : bucketList) {
-            JLabel bucketLabel = new JLabel(bucket.getName());
-            bucketLabel.setOpaque(true);
-            bucketLabel.setFont(new Font("Default", Font.PLAIN, SMALL_TEXT_SIZE));
-            if (bucketCount < groupSize) {
-                bucketSummaryPanel1.add(bucketLabel);
-            } else {
-                if (bucketCount >= groupSize && bucketCount < 2 * groupSize ) {
-                    bucketSummaryPanel2.add(bucketLabel);
-                } else {
-                    bucketSummaryPanel3.add(bucketLabel);
-                }
-            }
-            bucketCount++;
-            bucketLabelMap.put(bucket.getName(), bucketLabel);
-        }
+//        Map<String, JLabel> bucketLabelMap = new HashMap<>();
+//        List<Bucket> bucketList = buckets.getBuckets();
+//        int bucketCount = 0;
+//        int groupSize = bucketList.size() / 3;
+//
+//        for (Bucket bucket : bucketList) {
+//            JLabel bucketLabel = new JLabel(bucket.getName());
+//            bucketLabel.setOpaque(true);
+//            bucketLabel.setFont(new Font("Default", Font.PLAIN, SMALL_TEXT_SIZE));
+//            if (bucketCount < groupSize) {
+//                bucketSummaryPanel1.add(bucketLabel);
+//            } else {
+//                if (bucketCount >= groupSize && bucketCount < 2 * groupSize ) {
+//                    bucketSummaryPanel2.add(bucketLabel);
+//                } else {
+//                    bucketSummaryPanel3.add(bucketLabel);
+//                }
+//            }
+//            bucketCount++;
+//            bucketLabelMap.put(bucket.getName(), bucketLabel);
+//        }
 
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
 
-        Runnable updateEveryMinute = () -> {
-            List<String> lines = new ArrayList<>();
-            for (Bucket bucket : bucketList) {
-                lines.add(String.format("%s, £%,.2f, £%,.2f", bucket.getName(), bucket.getContents(), bucket.getCapacity()));
-            }
+//        Runnable updateEveryMinute = () -> {
+//            List<String> lines = new ArrayList<>();
+//            for (Bucket bucket : bucketList) {
+//                lines.add(String.format("%s, £%,.2f, £%,.2f", bucket.getName(), bucket.getContents(), bucket.getCapacity()));
+//            }
+//
+//            // write buckets to file
+//            LocalDateTime localNow = LocalDateTime.ofInstant(clock.getCurrentTime(), ZoneOffset.UTC);
+//            Month month = localNow.getMonth();
+//            Integer year = localNow.getYear();
+//            Path bucketPath = Path.of(String.format("/Users/duncangreen/WarehouseDocuments/By Company/Sky/%s-%d.txt", month.getDisplayName(TextStyle.SHORT, Locale.UK), year));
+//            try {
+//                FileUtils.writeLines(bucketPath.toFile(), "UTF8", lines, false);
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        };
 
-            // write buckets to file
-            LocalDateTime localNow = LocalDateTime.ofInstant(clock.getCurrentTime(), ZoneOffset.UTC);
-            Month month = localNow.getMonth();
-            Integer year = localNow.getYear();
-            Path bucketPath = Path.of(String.format("/Users/duncangreen/WarehouseDocuments/By Company/Sky/%s-%d.txt", month.getDisplayName(TextStyle.SHORT, Locale.UK), year));
-            try {
-                FileUtils.writeLines(bucketPath.toFile(), "UTF8", lines, false);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        };
-
-        executor.scheduleAtFixedRate(updateEveryMinute, 1, 1, TimeUnit.MINUTES);
+//        executor.scheduleAtFixedRate(updateEveryMinute, 1, 1, TimeUnit.MINUTES);
 
         Runnable updateEverySecond = () -> {
             Duration totalTime = workClock.getRunningTotalTime();
@@ -315,24 +310,24 @@ public class ClockInAndOutMain {
 
             setWeekSummary(workClock, clock, thisWeekLabel);
 
-            buckets.setTotalCash(totalThisMonthCash);
-            List<Bucket> listOfBuckets = buckets.getBuckets();
-            for (Bucket bucket : listOfBuckets) {
-                JLabel label = bucketLabelMap.get(bucket.getName());
-                label.setText(bucket.asText());
-                if (bucket.isHighlight()) {
-                    label.setFont(new Font("Default", Font.BOLD, SMALL_TEXT_SIZE+2));
-                }
-                if (bucket.isFull()) {
-                    label.setForeground(DARK_GREEN);
-                }
-                if (bucket.isEmpty()) {
-                    label.setForeground(Color.GRAY);
-                }
-                if (!bucket.isFull() && !bucket.isEmpty()) {
-                    label.setForeground(BLUE);
-                }
-            }
+//            buckets.setTotalCash(totalThisMonthCash);
+//            List<Bucket> listOfBuckets = buckets.getBuckets();
+//            for (Bucket bucket : listOfBuckets) {
+//                JLabel label = bucketLabelMap.get(bucket.getName());
+//                label.setText(bucket.asText());
+//                if (bucket.isHighlight()) {
+//                    label.setFont(new Font("Default", Font.BOLD, SMALL_TEXT_SIZE+2));
+//                }
+//                if (bucket.isFull()) {
+//                    label.setForeground(DARK_GREEN);
+//                }
+//                if (bucket.isEmpty()) {
+//                    label.setForeground(Color.GRAY);
+//                }
+//                if (!bucket.isFull() && !bucket.isEmpty()) {
+//                    label.setForeground(BLUE);
+//                }
+//            }
 
             Duration totalTimePreviousMonth = workClock.getTotalTimePreviousMonth();
             previousMonthLabel.setText(String.format("last month: %s, (£%,.2f) ", DurationFormats.formatTotalDuration(totalTimePreviousMonth), asCash(totalTimePreviousMonth)));
@@ -404,7 +399,7 @@ public class ClockInAndOutMain {
         Instant now = clock.getCurrentTime();
         Week currentWeek = Week.containing(now);
         Instant startOfMonday = currentWeek.getStartOf(DayOfWeek.MONDAY).truncatedTo(ChronoUnit.DAYS);
-        long numDays = Duration.between(startOfMonday, now).toDays();
+        long numDays = Duration.between(startOfMonday, now).toDays() + 1;
         Duration expectedHours = Duration.ofHours(numDays * 8L);
 
         if (duration.compareTo(expectedHours) >= 0) {
@@ -412,9 +407,18 @@ public class ClockInAndOutMain {
         } else {
             label.setForeground(Color.RED);
         }
-        label.setText(String.format("this week: %s %s, (£%,.2f)", DurationFormats.formatTotalDuration(duration.abs()), DurationFormats.formatDuration(duration.minus(expectedHours)), asCash(duration)));
+        label.setText(String.format("this week: %s %s, (£%,.2f)",
+                DurationFormats.formatTotalDuration(duration.abs()),
+                DurationFormats.formatDuration(duration.minus(expectedHours)), asCash(duration)));
     }
 
+    private static Duration minOf(Duration d1, Duration d2) {
+        if (d1.compareTo(d2) > 0) {
+            return d2;
+        } else {
+            return d1;
+        }
+    }
 
     private static double grossPerDay = 750;
     private static double conversion = 0.548295;
