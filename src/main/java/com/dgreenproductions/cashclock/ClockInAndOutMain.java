@@ -13,6 +13,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import static com.dgreenproductions.cashclock.Week.dayOfMonth;
 import static com.dgreenproductions.cashclock.Week.dayOfWeek;
 import static java.awt.BorderLayout.NORTH;
 import static java.awt.BorderLayout.SOUTH;
@@ -395,21 +396,25 @@ public class ClockInAndOutMain {
     }
 
     private static void setWeekSummary(WorkClock workClock, Clock clock, JLabel label) {
-        Duration duration = workClock.getWeekRunningTotal();
+        Duration runningTotal = workClock.getWeekRunningTotal();
         Instant now = clock.getCurrentTime();
         Week currentWeek = Week.containing(now);
         Instant startOfMonday = currentWeek.getStartOf(DayOfWeek.MONDAY).truncatedTo(ChronoUnit.DAYS);
         long numDays = Duration.between(startOfMonday, now).toDays() + 1;
         Duration expectedHours = Duration.ofHours(numDays * 8L);
 
-        if (duration.compareTo(expectedHours) >= 0) {
+        if (runningTotal.compareTo(expectedHours) >= 0) {
             label.setForeground(DARK_GREEN);
         } else {
-            label.setForeground(Color.RED);
+            if (expectedHours.minus(runningTotal).compareTo(Duration.ofHours(1)) < 0) {
+                label.setForeground(Color.BLUE);
+            } else {
+                label.setForeground(Color.RED);
+            }
         }
         label.setText(String.format("this week: %s %s, (£%,.2f)",
-                DurationFormats.formatTotalDuration(duration.abs()),
-                DurationFormats.formatDuration(duration.minus(expectedHours)), asCash(duration)));
+                DurationFormats.formatTotalDuration(runningTotal.abs()),
+                DurationFormats.formatDuration(runningTotal.minus(expectedHours)), asCash(runningTotal)));
     }
 
     private static Duration minOf(Duration d1, Duration d2) {

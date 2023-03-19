@@ -1,7 +1,9 @@
 package com.dgreenproductions.cashclock;
 
 import java.time.*;
+import java.time.format.TextStyle;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public class Week {
@@ -30,6 +32,15 @@ public class Week {
     public static DayOfWeek dayOfWeek(Instant instant) {
         return LocalDateTime.ofInstant(instant, ZoneOffset.UTC).getDayOfWeek();
     }
+
+    public static int dayOfMonth(Instant instant) {
+        return LocalDateTime.ofInstant(instant, ZoneOffset.UTC).getDayOfMonth();
+    }
+
+    public static String monthOfYear(Instant instant) {
+        return LocalDateTime.ofInstant(instant, ZoneOffset.UTC).getMonth().getDisplayName(TextStyle.SHORT, Locale.UK);
+    }
+
     public Instant getStartOfWeek() {
         return dayInstants.get(DayOfWeek.MONDAY);
     }
